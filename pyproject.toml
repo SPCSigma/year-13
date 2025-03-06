@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "pokemon cards database"
+version = "0.1.0"
+description = "Website that has a database that contains data for Pokemon Cards"
+authors = ["James Su <j.su2@stpauls.school.nz>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+flask = "^3.1.0"
+db-sqlite3 = "^0.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
