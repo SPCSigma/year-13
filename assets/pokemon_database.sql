@@ -31,7 +31,7 @@ CREATE TABLE tbl_cards(
   card_picture BLOB,
   card_rarity VARCHAR(20),
   card_price INTEGER,
-  Primary KEY(card_id)
+  PRIMARY KEY(card_id)
 );
 
 INSERT INTO tbl_cards (card_id, card_name, card_picture, card_rarity, card_price) VALUES (1, 'Squirtle', NULL, 'Common', 3);
@@ -53,8 +53,8 @@ CREATE TABLE tbl_user_login(
   password VARCHAR(30),
   email VARCHAR(30),
   user_access VARCHAR(5),
-  Primary KEY (person_id),
-  foreign KEY (person_id) REFERENCES tbl_people(person_id)
+  PRIMARY KEY (person_id),
+  FOREIGN KEY (person_id) REFERENCES tbl_people(person_id)
 );
 
 
