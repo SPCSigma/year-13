@@ -15,7 +15,7 @@ def get_db_connection():
     conn = None
     try:
         # Create connection to database
-        conn = sqlite3.connect("assets/pokemon_data.db")
+        conn = sqlite3.connect("assets/pokemon_database.db")
         logging.debug(f"get_db_connection() -> Database connected, version: {sqlite3.version}")
     except sqlite3.Error as er:
         logging.error('get_db_connection() -> Failed to connect to database \'assets/pokemon_database.db\'')
