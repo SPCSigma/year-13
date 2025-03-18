@@ -52,17 +52,17 @@ CREATE TABLE tbl_user_login(
   person_id INTEGER,
   password VARCHAR(30),
   email VARCHAR(30),
-  user_access VARCHAR(5),
+  user_access INTEGER,
   PRIMARY KEY (person_id),
   FOREIGN KEY (person_id) REFERENCES tbl_people(person_id)
 );
 
 
-INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (1, 'jamesu123', 'j.su2@stpauls.school.nz', 'admin');
-INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (2, 'skiba', 'o.walsdorf@stpauls.school.nz', 'user');
-INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (3, 'seanlesterer', 's.lester@stpauls.school.nz', 'user');
-INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (4, 'loylu', 'r.zhu@stpauls.school.nz', 'user');
-INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (5, 'ericjojo', 'e.joe@stpauls.school.nz', 'user');
+INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (1, 'jamesu123', 'j.su2@stpauls.school.nz', 1);
+INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (2, 'skiba', 'o.walsdorf@stpauls.school.nz', 0);
+INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (3, 'seanlesterer', 's.lester@stpauls.school.nz', 0);
+INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (4, 'loylu', 'r.zhu@stpauls.school.nz', 0);
+INSERT INTO tbl_user_login (person_id, password, email, user_access) VALUES (5, 'ericjojo', 'e.joe@stpauls.school.nz', 0);
 
 
 
