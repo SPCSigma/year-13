@@ -146,7 +146,7 @@ def login():
         cur = conn.cursor()
         
         # Check if user exists and password is correct
-        check = cur.execute('SELECT * FROM tbl_user_login WHERE person_id = ? AND password = ?', (login_username, login_password)).fetchone()
+        check = cur.execute('SELECT * FROM tbl_user_login WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
         
         if check:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
