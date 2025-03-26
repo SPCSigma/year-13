@@ -128,6 +128,33 @@ def index():
     
     return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column)
 
+
+@app.route('/login', methods = ['GET', 'POST'])
+def login():
+    logging.debug('login()')
+    error = None
+    if request.method == 'POST':
+        logging.debug('login() -> POST')
+        login_username = request.form.get('login_username')
+        login_password = request.form.get('login_password')
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Check if user exists and password is correct
+        check = cur.execute('SELECT * FROM users WHERE login_username = ? AND login_password = ?', (login_username, login_password)).fetchone()
+        
+        if check:
+            logging.debug(f'login() -> User {login_username} has logged in successfully')
+            return redirect(url_for('index'))
+        else:
+            logging.debug(f'login() -> Login attempt failed for user {login_username}')
+            error = 'Username or password do not match. Please try again'
+            
+        
+    return render_template('login.html', error=error)
+
+
 # running
 if __name__ == "__main__":
     app.run(debug=True)
