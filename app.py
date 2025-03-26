@@ -27,7 +27,7 @@ def get_db_connection():
     conn.execute('PRAGMA foreign_keys = ON')
     return conn
 
-# Function that gets all data and combines into one execution
+# Function that gets all data and combines it into one thing
 def get_data(selected_columns, search_data, sort_column, sort_type):
     conn = get_db_connection()
     cur = conn.cursor()
@@ -67,8 +67,12 @@ def get_data(selected_columns, search_data, sort_column, sort_type):
     
     return items
 
+@app.route("/")
+def root():
+    return redirect(url_for('login'))
 
-@app.route("/", methods=['GET', 'POST'])
+
+@app.route("/index", methods=['GET', 'POST'])
 def index():
     # Default values
     selected_columns = request.form.getlist('columns')
@@ -142,7 +146,7 @@ def login():
         cur = conn.cursor()
         
         # Check if user exists and password is correct
-        check = cur.execute('SELECT * FROM users WHERE login_username = ? AND login_password = ?', (login_username, login_password)).fetchone()
+        check = cur.execute('SELECT * FROM tbl_user_login WHERE person_id = ? AND password = ?', (login_username, login_password)).fetchone()
         
         if check:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
