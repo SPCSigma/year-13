@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 from sqlite3 import Error
 import logging
@@ -146,9 +146,9 @@ def login():
         cur = conn.cursor()
         
         # Check if user exists and password is correct
-        check = cur.execute('SELECT * FROM tbl_user_login WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
+        check_details = cur.execute('SELECT * FROM tbl_user_login WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
         
-        if check:
+        if check_details:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
             return redirect(url_for('index'))
         else:

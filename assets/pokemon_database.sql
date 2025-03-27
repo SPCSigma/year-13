@@ -50,7 +50,7 @@ INSERT INTO tbl_cards (card_id, card_name, card_picture, card_rarity, card_price
 -- Create tbl_user_login
 CREATE TABLE tbl_user_login(
   person_id INTEGER,
-  username VARCHAR(20),
+  username VARCHAR(15),
   password VARCHAR(30),
   email VARCHAR(30),
   user_access INTEGER,
