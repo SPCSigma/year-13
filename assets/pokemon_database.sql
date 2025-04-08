@@ -37,6 +37,7 @@ INSERT INTO tbl_cards (card_id, card_name, card_picture, card_rarity, card_price
 CREATE TABLE tbl_users(
   person_id INTEGER,
   person_name VARCHAR(20),
+  username VARCHAR(30),
   password VARCHAR(30),
   email VARCHAR(30),
   user_access VARCHAR(5),
@@ -44,11 +45,11 @@ CREATE TABLE tbl_users(
 );
 
 
-INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (1, 'James Su', 'jamesu123', 'j.su2@stpauls.school.nz', 'admin');
-INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (2, 'Oscar Walsdorf', 'skiba', 'o.walsdorf@stpauls.school.nz', 'user');
-INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (3, 'Sean Lester', 'seanlesterer', 's.lester@stpauls.school.nz', 'user');
-INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (4, 'Roy Zhu', 'loylu', 'r.zhu@stpauls.school.nz', 'user');
-INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (5, 'Eric Joe', 'ericjojo', 'e.joe@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (1, 'James Su', 'JamesDatPro', 'jamesu123', 'j.su2@stpauls.school.nz', 'admin');
+INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (2, 'Oscar Walsdorf', 'Pantsoiler28', 'skiba', 'o.walsdorf@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (3, 'Sean Lester', 'Snowynoob', 'seanlesterer', 's.lester@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (4, 'Roy Zhu', 'xx_zuzu_dabomb_xx', 'loylu', 'r.zhu@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (5, 'Eric Joe', 'EJ', 'ericjojo', 'e.joe@stpauls.school.nz', 'user');
 
 
 

@@ -181,6 +181,6 @@ def login():
 
 # running
 if __name__ == "__main__":
-    app.run(debug=True, port = 5075)
     deleteusercuzidontlikeyou = delete_user('jamesu123')
     print(f"Number of affected rows: {deleteusercuzidontlikeyou}")
+    app.run(debug=True, port = 5075)
