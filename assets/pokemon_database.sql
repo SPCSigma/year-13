@@ -4,25 +4,11 @@ PRAGMA foreign_keys = 1;
 -- Drops tables so that the code can reset and the tables only have the stated inserted values
 DROP TABLE IF EXISTS demo;
 DROP TABLE IF EXISTS tbl_cards_people;
-DROP TABLE IF EXISTS tbl_user_login;
+DROP TABLE IF EXISTS tbl_users;
 DROP TABLE IF EXISTS tbl_purchase_cards;
 DROP TABLE IF EXISTS tbl_cards;
-DROP TABLE IF EXISTS tbl_people;
 DROP TABLE IF EXISTS tbl_purchases;
 
-
--- Create tbl_people table
-CREATE TABLE tbl_people(
-  person_id INTEGER,
-  person_name VARCHAR(20),
-  PRIMARY KEY (person_id)
-);
-
-INSERT INTO tbl_people (person_id, person_name) VALUES (1, 'James Su');
-INSERT INTO tbl_people (person_id, person_name) VALUES (2, 'Oscar Walsdorf');
-INSERT INTO tbl_people (person_id, person_name) VALUES (3, 'Sean Lester');
-INSERT INTO tbl_people (person_id, person_name) VALUES (4, 'Roy Zhu');
-INSERT INTO tbl_people (person_id, person_name) VALUES (5, 'Eric Joe');
 
 -- Create Tbl_cards table
 CREATE TABLE tbl_cards(
@@ -31,7 +17,7 @@ CREATE TABLE tbl_cards(
   card_picture BLOB,
   card_rarity VARCHAR(20),
   card_price INTEGER,
-  PRIMARY KEY(card_id)
+  Primary KEY(card_id)
 );
 
 INSERT INTO tbl_cards (card_id, card_name, card_picture, card_rarity, card_price) VALUES (1, 'Squirtle', NULL, 'Common', 3);
@@ -47,23 +33,22 @@ INSERT INTO tbl_cards (card_id, card_name, card_picture, card_rarity, card_price
 
 
 
--- Create tbl_user_login
-CREATE TABLE tbl_user_login(
+-- Create tbl_users
+CREATE TABLE tbl_users(
   person_id INTEGER,
-  username VARCHAR(15),
+  person_name VARCHAR(20),
   password VARCHAR(30),
   email VARCHAR(30),
-  user_access INTEGER,
-  PRIMARY KEY (person_id),
-  FOREIGN KEY (person_id) REFERENCES tbl_people(person_id)
+  user_access VARCHAR(5),
+  Primary KEY (person_id)
 );
 
 
-INSERT INTO tbl_user_login (person_id, username, password, email, user_access) VALUES (1, 'JamesDatPro', 'jamesu123', 'j.su2@stpauls.school.nz', 1);
-INSERT INTO tbl_user_login (person_id, username, password, email, user_access) VALUES (2, 'Pantsoiler28', 'skiba', 'o.walsdorf@stpauls.school.nz', 0);
-INSERT INTO tbl_user_login (person_id, username, password, email, user_access) VALUES (3, 'Snowynoob', 'seanlesterer', 's.lester@stpauls.school.nz', 0);
-INSERT INTO tbl_user_login (person_id, username, password, email, user_access) VALUES (4, 'xx_zuzu_dabomb_xx', 'loylu', 'r.zhu@stpauls.school.nz', 0);
-INSERT INTO tbl_user_login (person_id, username, password, email, user_access) VALUES (5, 'eric', 'ericjojo', 'e.joe@stpauls.school.nz', 0);
+INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (1, 'James Su', 'jamesu123', 'j.su2@stpauls.school.nz', 'admin');
+INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (2, 'Oscar Walsdorf', 'skiba', 'o.walsdorf@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (3, 'Sean Lester', 'seanlesterer', 's.lester@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (4, 'Roy Zhu', 'loylu', 'r.zhu@stpauls.school.nz', 'user');
+INSERT INTO tbl_users (person_id, person_name, password, email, user_access) VALUES (5, 'Eric Joe', 'ericjojo', 'e.joe@stpauls.school.nz', 'user');
 
 
 
@@ -72,7 +57,7 @@ CREATE TABLE tbl_cards_people(
   person_id INTEGER,
   card_id INTEGER,
   PRIMARY KEY (person_id, card_id),
-  FOREIGN KEY (person_id) REFERENCES tbl_people(person_id),
+  FOREIGN KEY (person_id) REFERENCES tbl_users(person_id),
   FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)
 );
 

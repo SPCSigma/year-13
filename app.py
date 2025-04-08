@@ -4,6 +4,8 @@ from sqlite3 import Error
 import logging
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
+# Add secret key for session encryption
+app.config['SECRET_KEY'] = 'T5jicsXX4qC0rZleWafsCsOSzLpKuwt2'
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -66,6 +68,22 @@ def get_data(selected_columns, search_data, sort_column, sort_type):
     conn.close()
     
     return items
+
+def delete_user(username):
+    logging.debug(f"Deleting row {username} from tbl_users")
+    conn = get_db_connection()
+    c = conn.cursor()
+    sql = """DELETE FROM tbl_users WHERE username = ?"""
+    c.execute(sql, (username,))
+    affected_rows = c.rowcount
+    logging.debug(f"Delete_user() -> Number of affected rows: {affected_rows}")
+    
+    conn.commit()
+    conn.close()
+    
+    return affected_rows
+    
+
 
 @app.route("/")
 def root():
@@ -150,9 +168,11 @@ def login():
         
         if check_details:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
-            return redirect(url_for('index'))
+            flash(f'Login successful for {login_username}! Redirecting shortly...', 'success')
+            return render_template('login.html'), {"Refresh": "0; url=index"}
         else:
             logging.debug(f'login() -> Login attempt failed for user {login_username}')
+            flash(f'Login was unsuccessful, please try again', 'danger')
             error = 'Username or password do not match. Please try again'
             
         
@@ -161,4 +181,6 @@ def login():
 
 # running
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port = 5075)
+    deleteusercuzidontlikeyou = delete_user('jamesu123')
+    print(f"Number of affected rows: {deleteusercuzidontlikeyou}")
