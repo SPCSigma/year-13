@@ -176,7 +176,7 @@ def login():
         if check_details:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
             flash(f'Login successful for {login_username}! Redirecting shortly...', 'success')
-            return render_template('login.html'), {"Refresh": "0; url=index"}
+            return render_template('login.html'), {"Refresh": "1; url=index"}
         else:
             logging.debug(f'login() -> Login attempt failed for user {login_username}')
             flash(f'Login was unsuccessful, please try again', 'danger')
