@@ -89,7 +89,20 @@ def delete_user(person_id):
     total_affected_rows = cards_affected_rows + users_affected_rows
     
     return total_affected_rows
-    
+
+def update_card(card_id):
+    logging.debug(f"Updating data in row {card_id} in tbl_cards")
+    conn = get_db_connection()
+    sql = """UPDATE tbl_cards SET
+            card_name = ?,
+            card_rarity = ?,
+            card_price = ?
+            WHERE card_id = ?
+            """
+    affected_rows = conn.execute(sql, card_id).rowcount
+    logging.debug(f"update_card() -> Number of affected rows for card id: {card_id} is {affected_rows}")
+    conn.commit()
+    conn.close()
 
 
 @app.route("/")
