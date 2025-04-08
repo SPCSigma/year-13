@@ -69,19 +69,26 @@ def get_data(selected_columns, search_data, sort_column, sort_type):
     
     return items
 
-def delete_user(username):
-    logging.debug(f"Deleting row {username} from tbl_users")
+def delete_user(person_id):
+    logging.debug(f"Deleting row {person_id} from tbl_users")
     conn = get_db_connection()
     c = conn.cursor()
-    sql = """DELETE FROM tbl_users WHERE username = ?"""
-    c.execute(sql, (username,))
-    affected_rows = c.rowcount
-    logging.debug(f"Delete_user() -> Number of affected rows: {affected_rows}")
+    sql1 = """DELETE FROM tbl_cards_people WHERE person_id = ?"""
+    
+    c.execute(sql1, (person_id,))
+    cards_affected_rows = c.rowcount
+    logging.debug(f"delete_user() -> Deleted {cards_affected_rows} rows from tbl_cards_people")
+    
+    sql2 = """DELETE FROM tbl_users WHERE person_id = ?"""
+    c.execute(sql2, (person_id,))
+    users_affected_rows = c.rowcount
+    logging.debug(f"Delete_user() -> Deleted user {person_id}. Rows: {users_affected_rows} deleted")
     
     conn.commit()
     conn.close()
+    total_affected_rows = cards_affected_rows + users_affected_rows
     
-    return affected_rows
+    return total_affected_rows
     
 
 
@@ -164,7 +171,7 @@ def login():
         cur = conn.cursor()
         
         # Check if user exists and password is correct
-        check_details = cur.execute('SELECT * FROM tbl_user_login WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
+        check_details = cur.execute('SELECT * FROM tbl_users WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
         
         if check_details:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
@@ -181,6 +188,6 @@ def login():
 
 # running
 if __name__ == "__main__":
-    deleteusercuzidontlikeyou = delete_user('jamesu123')
-    print(f"Number of affected rows: {deleteusercuzidontlikeyou}")
+    # deleteusercuzidontlikeyou = delete_user('1')
+    # print(f"Total number of affected rows: {deleteusercuzidontlikeyou}")
     app.run(debug=True, port = 5075)
