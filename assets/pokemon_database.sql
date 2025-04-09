@@ -15,8 +15,8 @@ CREATE TABLE tbl_cards(
   card_id INTEGER,
   card_name VARCHAR(20),
   card_picture BLOB,
-  card_rarity VARCHAR(20),
-  card_price INTEGER,
+  card_rarity VARCHAR(15),
+  card_price FLOAT,
   PRIMARY KEY(card_id)
 );
 
@@ -75,7 +75,7 @@ INSERT INTO tbl_cards_people (person_id, card_id) VALUES (5, 9);
 
 -- Creates tbl_purchases
 CREATE TABLE tbl_purchases(
-    purchase_id INT,
+    purchase_id INTEGER,
   	purchase_date DATETIME,
   	name_of_purchaser VARCHAR(30),
     total FLOAT,
@@ -93,8 +93,8 @@ INSERT INTO tbl_purchases (purchase_id, purchase_date, name_of_purchaser, total,
 
 -- Creates tbl_purchase_cards
 CREATE TABLE tbl_purchase_cards(
-    purchase_id INT,
-    card_id INT,
+    purchase_id INTEGER,
+    card_id INTEGER,
     PRIMARY KEY (purchase_id, card_id),
     FOREIGN KEY (purchase_id) REFERENCES tbl_purchases(purchase_id),
     FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)

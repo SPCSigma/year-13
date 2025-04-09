@@ -17,8 +17,8 @@ with sqlite3.connect("assets/pokemon_database.db") as conn:
 				card_id INTEGER PRIMARY KEY AUTOINCREMENT,
 				card_name VARCHAR(20),
 				card_picture BLOB,
-				card_rarity VARCHAR(20),
-				card_price INTEGER
+				card_rarity VARCHAR(25),
+				card_price FLOAT
         	)''')
     
     c.execute('''CREATE TABLE tbl_users (
@@ -48,8 +48,8 @@ with sqlite3.connect("assets/pokemon_database.db") as conn:
         	)''')
     
     c.execute('''CREATE TABLE tbl_purchase_cards(
-				purchase_id INT,
-				card_id INT,
+				purchase_id INTEGER,
+				card_id INTEGER,
 				PRIMARY KEY (purchase_id, card_id),
 				FOREIGN KEY (purchase_id) REFERENCES tbl_purchases(purchase_id),
 				FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)
