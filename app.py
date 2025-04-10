@@ -104,6 +104,15 @@ def update_card(card_id):
     conn.commit()
     conn.close()
 
+def add_card(add_card_data):
+    logging.debug(f"Adding a card with data: {add_card_data}")
+    sql = """INSERT INTO tbl_cards (card_name, card_picture, card_rarity, card_price) VALUES (?, NULL, ?, ?)"""
+    conn = get_db_connection()
+    c = conn.cursor()
+    new_item_id = c.execute(sql, add_card_data).lastrowid
+    logging.debug(f"add_card() -> New card successfully added with ID: {new_item_id}")
+    conn.commit()
+    conn.close()
 
 @app.route("/")
 def root():
