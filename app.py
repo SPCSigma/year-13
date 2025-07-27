@@ -130,17 +130,12 @@ def index():
     sort_column = request.form.get("sort_column", "card_id")
     sort_type = request.form.get("sort_type", "ASC")
     
+    user_access = session.get('user_access', 'user')
+    
     # Default page view load all items for the user.
     data = {}
     data = get_data(selected_columns, search_data, sort_column, sort_type)
-    
-    if user_access == 'admin':
-        conn = get_db_connection()
-        users = conn.execute("SELECT * FROM tbl_users").fetchall()
-        cards = get_data(selected_columns, search_data, sort_column, sort_type)
-        purchases = conn.execute("SELECT * FROM tbl_purchases").fetchall()
-        conn.close()
-        return render_template("base.html", items=cards, users=users, purchases=purchases, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=True)
+
     
     # Listen for data returning from the front end.
     if request.method == 'POST':
@@ -184,8 +179,22 @@ def index():
             if not selected_columns:
                 selected_columns = ['card_id', 'card_name', 'card_rarity', 'card_price']
                 data = get_data(selected_columns, search_data, sort_column, sort_type)
+                
+                
     
-    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column)
+    # User/Admin display data
+    if user_access == 'admin':
+        conn = get_db_connection()
+        users = conn.execute("SELECT * FROM tbl_users").fetchall()
+        cards = get_data(selected_columns, search_data, sort_column, sort_type)
+        purchases = conn.execute("SELECT * FROM tbl_purchases").fetchall()
+        conn.close()
+        return render_template("base.html", items=cards, users=users, purchases=purchases, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=True)
+    else:
+        cards = get_data(selected_columns, search_data, sort_column, sort_type)
+        return render_template("base.html", items=cards, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=False)
+    
+    # return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column)
 
 
 @app.route('/login', methods = ['GET', 'POST'])
