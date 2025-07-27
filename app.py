@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 import sqlite3
 from sqlite3 import Error
 import logging
@@ -134,6 +134,14 @@ def index():
     data = {}
     data = get_data(selected_columns, search_data, sort_column, sort_type)
     
+    if user_access == 'admin':
+        conn = get_db_connection()
+        users = conn.execute("SELECT * FROM tbl_users").fetchall()
+        cards = get_data(selected_columns, search_data, sort_column, sort_type)
+        purchases = conn.execute("SELECT * FROM tbl_purchases").fetchall()
+        conn.close()
+        return render_template("base.html", items=cards, users=users, purchases=purchases, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=True)
+    
     # Listen for data returning from the front end.
     if request.method == 'POST':
         action = request.form.get("action")
@@ -197,14 +205,17 @@ def login():
         
         if check_details:
             logging.debug(f'login() -> User {login_username} has logged in successfully')
+            user_access = check_details['user_access']
+            session['username'] = login_username
+            session['user_access'] = user_access
             flash(f'Login successful for {login_username}! Redirecting shortly...', 'success')
             return render_template('login.html'), {"Refresh": "1; url=index"}
         else:
             logging.debug(f'login() -> Login attempt failed for user {login_username}')
             flash(f'Login was unsuccessful, please try again', 'danger')
             error = 'Username or password do not match. Please try again'
+            return render_template('login.html', error=error)
             
-        
     return render_template('login.html', error=error) 
 
 
