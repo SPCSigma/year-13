@@ -147,6 +147,7 @@
                 {% if 'card_name' in selected_columns %}<th scope="col">Name</th>{% endif %}
                 {% if 'card_rarity' in selected_columns %}<th scope="col">Rarity</th>{% endif %}
                 {% if 'card_price' in selected_columns %}<th scope="col">Price</th>{% endif %}
+                {% if admin %}<th>Actions</th>{% endif %}
               </tr>
             </thead>
             <tbody>
@@ -156,10 +157,15 @@
                 {% if 'card_name' in selected_columns %}<td>{{ row['card_name'] }}</td>{% endif %}
                 {% if 'card_rarity' in selected_columns %}<td>{{ row['card_rarity'] }}</td>{% endif %}
                 {% if 'card_price' in selected_columns %}<td>${{ row['card_price'] }}</td>{% endif %}
+                {% if admin %}
+                <td>
+                </td>
+                {% endif %}
               </tr>
               {% endfor %}
             </tbody>
           </table>
+
   
           <div class="bottompagespace"></div>
         </div>
