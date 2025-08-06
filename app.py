@@ -121,6 +121,8 @@ def root():
 
 @app.route("/index", methods=['GET', 'POST'])
 def index():
+    
+    
     # Default values
     selected_columns = request.form.getlist('columns')
     if not selected_columns:
@@ -129,6 +131,8 @@ def index():
     search_data = request.form.get("search_data", "")
     sort_column = request.form.get("sort_column", "card_id")
     sort_type = request.form.get("sort_type", "ASC")
+    
+    
     
     # Default page view load all items for the user.
     data = {}
@@ -194,16 +198,25 @@ def login():
         
         # Check if user exists and password is correct
         check_details = cur.execute('SELECT * FROM tbl_users WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
+        conn.close()
         
         if check_details:
+            user_access = check_details['user_access']
+            logging.debug("Checking if user is an admin")
+            if user_access == 'admin':
+                logging.debug(f'Admin check -> User {login_username} is an admin')
+                admin = True
+            else:
+                logging.debug(f'Admin check -> User {login_username} is not an admin')
+                admin = False
             logging.debug(f'login() -> User {login_username} has logged in successfully')
-            flash(f'Login successful for {login_username}! Redirecting shortly...', 'success')
-            return render_template('login.html'), {"Refresh": "1; url=index"}
+            flash(f'Login successful for {login_username, admin}! Redirecting shortly...', 'success')
+            return render_template('login.html', username=login_username, password=login_password, user_access=user_access, admin=admin), {"Refresh": "1; url=index"}
         else:
             logging.debug(f'login() -> Login attempt failed for user {login_username}')
-            flash(f'Login was unsuccessful, please try again', 'danger')
+            flash('Login was unsuccessful, please try again', 'danger')
             error = 'Username or password do not match. Please try again'
-            
+            return render_template('login.html', error=error)   
         
     return render_template('login.html', error=error) 
 
