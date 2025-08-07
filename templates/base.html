@@ -104,8 +104,6 @@
               <input type="hidden" name="action" value="search">
               <input type="hidden" name="sort_column" value="{{ sort_column }}">
               <input type="hidden" name="sort_type" value="{{ sort_type }}">
-              <input type="hidden" name="username" value="{{ username }}">
-              <input type="hidden" name="admin" value="{{ admin }}">
               <button class="btn btn-primary search-width" type="submit" name="action" value="search">Search</button>
             </form>
           </div>
@@ -119,8 +117,6 @@
             <!-- Sorting buttons -->
             <form class="d-flex flex-grow-1" method="POST" name="sort" role="sort">
               <input type="hidden" name="action" value="sort">
-              <input type="hidden" name="username" value="{{ username }}">
-              <input type="hidden" name="admin" value="{{ admin }}">
               <select class="form-select me-2" name="sort_column">
                 <option value="card_id" {% if sort_column == 'card_id' %}selected{% endif %}>ID</option>
                 <option value="card_name" {% if sort_column == 'card_name' %}selected{% endif %}>Name</option>
@@ -150,8 +146,8 @@
                 {% if 'card_id' in selected_columns %}<th scope="col">ID</th>{% endif %}
                 {% if 'card_name' in selected_columns %}<th scope="col">Name</th>{% endif %}
                 {% if 'card_rarity' in selected_columns %}<th scope="col">Rarity</th>{% endif %}
-                {% if 'card_price' in selected_columns %}<th scope="col">Price {{ admin }}</th>{% endif %}
-                {% if admin == True %}<th>Actions</th>{% endif %}
+                {% if 'card_price' in selected_columns %}<th scope="col">Price</th>{% endif %}
+                {% if admin %}<th>Actions</th>{% endif %}
                 
               </tr>
             </thead>
@@ -162,7 +158,7 @@
                 {% if 'card_name' in selected_columns %}<td>{{ row['card_name'] }}</td>{% endif %}
                 {% if 'card_rarity' in selected_columns %}<td>{{ row['card_rarity'] }}</td>{% endif %}
                 {% if 'card_price' in selected_columns %}<td>${{ row['card_price'] }}</td>{% endif %}
-                {% if admin == True %}
+                {% if admin %}
                   <td>
                     <!-- <a href="/edit/{{ row['card_id'] }}">Edit</a> | -->
                     <!-- <a href="/delete/{{ row['card_id'] }}">Delete</a> -->
@@ -193,29 +189,21 @@
                 <div class="form-check">
                   <input type="checkbox" class="form-check-input" name="columns" value="card_id" id="column_card_id" {%
                     if 'card_id' in selected_columns %}checked{% endif %}>
-                  <input type="hidden" name="username" value="{{ username }}">
-                  <input type="hidden" name="admin" value="{{ admin }}">
                   <label for="column_card_id" class="form-check-label">ID</label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" name="columns" value="card_name" id="column_card_name" {% if 'card_name'
                     in selected_columns %}checked{% endif %}>
-                  <input type="hidden" name="username" value="{{ username }}">
-                  <input type="hidden" name="admin" value="{{ admin }}">
                   <label class="form-check-label" for="column_card_name">Name</label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" name="columns" value="card_rarity" id="column_card_rarity"
                     {% if 'card_rarity' in selected_columns %}checked{% endif %}>
-                  <input type="hidden" name="username" value="{{ username }}">
-                  <input type="hidden" name="admin" value="{{ admin }}">
                   <label class="form-check-label" for="column_card_rarity">Rarity</label>
                 </div>
                 <div class="form-check">
                   <input class="form-check-input" type="checkbox" name="columns" value="card_price" id="column_card_price" {%
                     if 'card_price' in selected_columns %}checked{% endif %}>
-                  <input type="hidden" name="username" value="{{ username }}">
-                  <input type="hidden" name="admin" value="{{ admin }}">
                   <label class="form-check-label" for="column_card_price">Price</label>
                 </div>
               </div>
@@ -225,8 +213,6 @@
               <input type="hidden" name="sort_column" id="sort_column" value="{{sort_column}}">
               <input type="hidden" name="sort_type" id="sort_type" value="{{sort_type}}">
               <input type="hidden" name="search_data" id="search_data" value="{{ search_data }}">
-              <input type="hidden" name="username" value="{{ username }}">
-              <input type="hidden" name="admin" value="{{ admin }}">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               <button class="btn btn-primary" type="submit" name="action" value="filter">Apply Filters</button>
             </div>

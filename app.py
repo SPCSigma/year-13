@@ -118,11 +118,11 @@ def add_card(add_card_data):
 def root():
     return redirect(url_for('login'))
 
+@app.route("/index", methods=['GET', 'POST'], defaults={'admin': False})
+@app.route("/index/<admin>", methods=['GET', 'POST'])
+def index(admin):
+    
 
-@app.route("/index", methods=['GET', 'POST'])
-def index():
-    
-    
     # Default values
     selected_columns = request.form.getlist('columns')
     if not selected_columns:
@@ -181,7 +181,7 @@ def index():
                 selected_columns = ['card_id', 'card_name', 'card_rarity', 'card_price']
                 data = get_data(selected_columns, search_data, sort_column, sort_type)
     
-    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column)
+    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin)
 
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -210,13 +210,15 @@ def login():
                 logging.debug(f'Admin check -> User {login_username} is not an admin')
                 admin = False
             logging.debug(f'login() -> User {login_username} has logged in successfully')
-            flash(f'Login successful for {login_username, admin}! Redirecting shortly...', 'success')
-            return render_template('login.html', username=login_username, password=login_password, user_access=user_access, admin=admin), {"Refresh": "1; url=index"}
+            logging.debug(admin)
+            # flash(f'Login successful for {login_username, admin}! Redirecting shortly...', 'success')
+            # return render_template('base.html', username=login_username, password=login_password, user_access=user_access, admin=admin)
+            return redirect (url_for('index', admin=admin))
         else:
             logging.debug(f'login() -> Login attempt failed for user {login_username}')
             flash('Login was unsuccessful, please try again', 'danger')
             error = 'Username or password do not match. Please try again'
-            return render_template('login.html', error=error)   
+            return render_template('login.html', error=error)
         
     return render_template('login.html', error=error) 
 
