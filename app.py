@@ -114,6 +114,33 @@ def add_card(add_card_data):
     conn.commit()
     conn.close()
 
+def delete_card(card_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    
+    sql1 = """DELETE FROM tbl_purchase_cards WHERE card_id = ?"""
+    c.execute(sql1, (card_id,))
+    purchase_cards_affected_rows = c.rowcount
+    logging.debug(f"Deleting card {card_id} from tbl_purchase_cards")
+    
+    sql2 = """DELETE FROM tbl_cards_people WHERE card_id = ?"""
+    c.execute(sql2, (card_id,))
+    cards_people_affected_rows = c.rowcount
+    logging.debug(f"Deleting card {card_id} from tbl_cards_people")
+    
+    sql3 = """DELETE FROM tbl_cards where card_id = ?"""
+    c.execute(sql3, (card_id,))
+    tbl_cards_affected_rows = c.rowcount
+    logging.debug(f"DELETE FROM tbl_cards where card_id = ?")
+    
+    conn.commit()
+    conn.close()
+    total_affected_rows = purchase_cards_affected_rows + cards_people_affected_rows + tbl_cards_affected_rows
+    
+    return total_affected_rows
+
+
+
 @app.route("/")
 def root():
     return redirect(url_for('login'))
@@ -121,7 +148,6 @@ def root():
 @app.route("/index", methods=['GET', 'POST'], defaults={'admin': False})
 @app.route("/index/<admin>", methods=['GET', 'POST'])
 def index(admin):
-    
 
     # Default values
     selected_columns = request.form.getlist('columns')
@@ -180,6 +206,20 @@ def index(admin):
             if not selected_columns:
                 selected_columns = ['card_id', 'card_name', 'card_rarity', 'card_price']
                 data = get_data(selected_columns, search_data, sort_column, sort_type)
+                
+        if action == 'add_card_form':
+            logging.debug("Processing POST request for add_card_form")
+            card_name = request.form.get("addCardName")
+            card_rarity = request.form.get("cardRarity")
+            card_price = request.form.get("cardPrice")
+            add_card_data = (card_name, card_rarity, card_price)
+            add_card(add_card_data)
+            return redirect('/')
+        
+        if action == "update_card_form":
+            logging.debug("Processing POST request for update_card_form")
+            card_id = request.form.get("updateCardID")
+            
     
     return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin)
 

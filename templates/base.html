@@ -65,9 +65,12 @@
 </head>
 
 <body>
+  <div style="width:100%; background-color: #FF6F61; color:white; text-align:center; padding:5px 0; font-weight: bold; font-size: 1.2rem; letter-spacing: 1.5px;">
+  <a>SALE ON NOW! UP TO 20% OFF</a>
+  </div>
     <main class="d-flex">
       <!-- Sidebar -->
-      <div class="d-flex flex-column p-3 sidebar sidebar-colour" style="width: 280px; height: 100vh;">
+      <div class="d-flex flex-column p-3 sidebar sidebar-colour" style="width: 280px; height: 100vh; display: flex;">
         <a href="/index" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none" href="#">
           <svg xmlns="http://www.w3.org/2000/svg" width="40" height="32" fill="currentColor" class="bi bi-house"
             viewBox="0 0 16 16">
@@ -85,6 +88,12 @@
             </a>
           </li>
           <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/">
+              <svg class="bi pe-none me-2" width="16" height="16"></svg>
+              Cart
+            </a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link" aria-current="page" href="/login">
               <svg class="bi pe-none me-2" width="16" height="16"></svg>
               Logout
@@ -92,6 +101,8 @@
           </li>
         </ul>
       </div>
+
+
       <!-- Content -->
       <div class="tab-content flex-grow-1 pt-2 main-body-colour px-4">
         <!-- All Items Page -->
@@ -138,9 +149,29 @@
               <button class="btn btn-primary w-25" type="submit" name="action" value="sort">Sort</button>
             </form>
           </div>
+
+          <!-- Grid container thing -->
+          <div class="container mt-4">
+            <div class="row gx-5">
+              {% for row in items %}
+                <div class="col-md-4 mb-4">
+                  <div class="card h-100 shadow-sm">
+                    <img src="/assets/mwFzF.png" style="height: 200px; width: 100%; border-top-left-radius: 10px; border-top-right-radius: 10px;" alt="{{ row['card_name'] }}">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                      <h5 class="card-title">{{ row['card_name'] }}</h5>
+                      <p class="card-text">
+                        <strong>Price:</strong> <span style="color:#FF6F61;">NZD ${{ row['card_price'] }}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
   
           <!-- Table Contents -->
-          <table class="table table-striped-columns text-center custom-colour" style="margin-top: 0.6vw;">
+           <!-- <div>
+            <table class="table table-striped-columns text-center custom-colour" style="margin-top: 0.6vw;">
             <thead>
               <tr>
                 {% if 'card_id' in selected_columns %}<th scope="col">ID</th>{% endif %}
@@ -160,14 +191,17 @@
                 {% if 'card_price' in selected_columns %}<td>${{ row['card_price'] }}</td>{% endif %}
                 {% if admin %}
                   <td>
-                    <!-- <a href="/edit/{{ row['card_id'] }}">Edit</a> | -->
-                    <!-- <a href="/delete/{{ row['card_id'] }}">Delete</a> -->
+                    <a href="/edit/{{ row['card_id'] }}">Edit</a> |
+                    <a href="/delete/{{ row['card_id'] }}">Delete</a>
                   </td>
                 {% endif %}
               </tr>
               {% endfor %}
             </tbody>
           </table>
+
+           </div> -->
+          
 
   
           <div class="bottompagespace"></div>
