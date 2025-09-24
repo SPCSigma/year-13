@@ -149,14 +149,109 @@
               <button class="btn btn-primary w-25" type="submit" name="action" value="sort">Sort</button>
             </form>
           </div>
+  
+          <!-- Table Contents for admin-->
+          {% if admin %}
+          <div class="container mt-4">
+            <div class="row">
+              <div class="col">
+                <table class="table table-striped-columns text-center custom-colour" style="margin-top: 0.6vw;">
+                  <thead>
+                    <tr>
+                      {% if 'card_id' in selected_columns %}<th scope="col">ID</th>{% endif %}
+                      {% if 'card_name' in selected_columns %}<th scope="col">Name</th>{% endif %}
+                      {% if 'card_rarity' in selected_columns %}<th scope="col">Rarity</th>{% endif %}
+                      {% if 'card_price' in selected_columns %}<th scope="col">Price</th>{% endif %}
+                      {% if admin %}<th>Actions</th>{% endif %}
+                      
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in items %}
+                    <tr>
+                      {% if 'card_id' in selected_columns %}<td>{{ row['card_id'] }}</td>{% endif %}
+                      {% if 'card_name' in selected_columns %}<td>{{ row['card_name'] }}</td>{% endif %}
+                      {% if 'card_rarity' in selected_columns %}<td>{{ row['card_rarity'] }}</td>{% endif %}
+                      {% if 'card_price' in selected_columns %}<td>${{ row['card_price'] }}</td>{% endif %}
+                      {% if admin %}
+                        <td>
+                          <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editCardModal{{ row['card_id'] }}">
+                            Edit
+                          </button> |
+                          <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteCardModal{{ row['card_id'] }}">
+                            Delete
+                          </button>
+                        </td>
+                      <!-- Edit Card Modal -->
+                      <div class="modal fade" id="editCardModal{{ row['card_id'] }}" tabindex="-1" aria-labelledby="editCardModalLabel{{ row['card_id'] }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <form method="POST" action="/edit_card">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="editCardModalLabel{{ row['card_id'] }}">Edit Card</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                <input type="hidden" name="card_id" value="{{ row['card_id'] }}">
+                                <div class="mb-3">
+                                  <label class="form-label">Name</label>
+                                  <input type="text" name="card_name" class="form-control" value="{{ row['card_name'] }}">
+                                </div>
+                                <div class="mb-3">
+                                  <label class="form-label">Rarity</label>
+                                  <input type="text" name="card_rarity" class="form-control" value="{{ row['card_rarity'] }}">
+                                </div>
+                                <div class="mb-3">
+                                  <label class="form-label">Price</label>
+                                  <input type="number" step="0.01" name="card_price" class="form-control" value="{{ row['card_price'] }}">
+                                </div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
 
-          <!-- Grid container thing -->
+                      <!-- Delete Card Modal -->
+                      <div class="modal fade" id="deleteCardModal{{ row['card_id'] }}" tabindex="-1" aria-labelledby="deleteCardModalLabel{{ row['card_id'] }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <form method="POST" action="/delete_card">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="deleteCardModalLabel{{ row['card_id'] }}">Delete Card</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                <input type="hidden" name="card_id" value="{{ row['card_id'] }}">
+                                <p>Are you sure you want to delete <strong>{{ row['card_name'] }}</strong>?</p>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                              </div>
+                            </div>
+                          </form>
+                        </div>
+                      </div>
+                      {% endif %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <!-- Grid Container thing for user-->
           <div class="container mt-4">
             <div class="row gx-5">
               {% for row in items %}
                 <div class="col-md-4 mb-4">
                   <div class="card h-100 shadow-sm">
-                    <img src="/assets/mwFzF.png" style="height: 200px; width: 100%; border-top-left-radius: 10px; border-top-right-radius: 10px;" alt="{{ row['card_name'] }}">
+                    <img src="/assets/blankphoto.png" style="height: 200px; width: 100%; border-top-left-radius: 10px; border-top-right-radius: 10px;" alt="{{ row['card_name'] }}">
                     <div class="card-body d-flex flex-column justify-content-between">
                       <h5 class="card-title">{{ row['card_name'] }}</h5>
                       <p class="card-text">
@@ -168,39 +263,8 @@
               {% endfor %}
             </div>
           </div>
-  
-          <!-- Table Contents -->
-           <!-- <div>
-            <table class="table table-striped-columns text-center custom-colour" style="margin-top: 0.6vw;">
-            <thead>
-              <tr>
-                {% if 'card_id' in selected_columns %}<th scope="col">ID</th>{% endif %}
-                {% if 'card_name' in selected_columns %}<th scope="col">Name</th>{% endif %}
-                {% if 'card_rarity' in selected_columns %}<th scope="col">Rarity</th>{% endif %}
-                {% if 'card_price' in selected_columns %}<th scope="col">Price</th>{% endif %}
-                {% if admin %}<th>Actions</th>{% endif %}
-                
-              </tr>
-            </thead>
-            <tbody>
-              {% for row in items %}
-              <tr>
-                {% if 'card_id' in selected_columns %}<td>{{ row['card_id'] }}</td>{% endif %}
-                {% if 'card_name' in selected_columns %}<td>{{ row['card_name'] }}</td>{% endif %}
-                {% if 'card_rarity' in selected_columns %}<td>{{ row['card_rarity'] }}</td>{% endif %}
-                {% if 'card_price' in selected_columns %}<td>${{ row['card_price'] }}</td>{% endif %}
-                {% if admin %}
-                  <td>
-                    <a href="/edit/{{ row['card_id'] }}">Edit</a> |
-                    <a href="/delete/{{ row['card_id'] }}">Delete</a>
-                  </td>
-                {% endif %}
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+          {% endif %}
 
-           </div> -->
           
 
   
@@ -208,6 +272,8 @@
         </div>
       </div>
     </main>
+
+
   
     <!-- Filter Modal -->
     <div class="modal fade" id="filterModal" tabindex="-1" aria-labelledby="filterModalLabel" aria-hidden="true">

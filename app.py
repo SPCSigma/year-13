@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, sessions
 import sqlite3
 from sqlite3 import Error
 import logging
@@ -10,6 +10,7 @@ app.config['SECRET_KEY'] = 'T5jicsXX4qC0rZleWafsCsOSzLpKuwt2'
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
                     handlers=[logging.StreamHandler()])
+logging.getLogger().setLevel(logging.DEBUG)
 
 def get_db_connection():
     """ Create connection to database """
@@ -90,7 +91,8 @@ def delete_user(person_id):
     
     return total_affected_rows
 
-def update_card(card_id):
+def update_card(update_card_data):
+    card_name, card_rarity, card_price, card_id = update_card_data
     logging.debug(f"Updating data in row {card_id} in tbl_cards")
     conn = get_db_connection()
     sql = """UPDATE tbl_cards SET
@@ -99,8 +101,8 @@ def update_card(card_id):
             card_price = ?
             WHERE card_id = ?
             """
-    affected_rows = conn.execute(sql, card_id).rowcount
-    logging.debug(f"update_card() -> Number of affected rows for card id: {card_id} is {affected_rows}")
+    affected_rows = conn.execute(sql, update_card_data).rowcount
+    logging.debug(f"update_card() -> Number of affected rows for card id: {card_id} is {affected_rows} row(s)")
     conn.commit()
     conn.close()
 
@@ -138,7 +140,6 @@ def delete_card(card_id):
     total_affected_rows = purchase_cards_affected_rows + cards_people_affected_rows + tbl_cards_affected_rows
     
     return total_affected_rows
-
 
 
 @app.route("/")
@@ -222,6 +223,23 @@ def index(admin):
             
     
     return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin)
+
+@app.route("/edit_card", methods=["POST"])
+def edit_card_route():
+    card_id = request.form.get("card_id")
+    card_name = request.form.get("card_name")
+    card_rarity = request.form.get("card_rarity")
+    card_price = request.form.get("card_price")
+    update_card_data = (card_name, card_rarity, card_price, card_id)
+    update_card(update_card_data)
+    return redirect(url_for('index', admin=True))
+
+
+@app.route("/delete_card", methods=['POST'])
+def delete_card_route():
+    card_id = request.form.get("card_id")
+    delete_card(card_id)
+    return redirect(url_for('index', admin=True))
 
 
 @app.route('/login', methods = ['GET', 'POST'])
