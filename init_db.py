@@ -7,6 +7,7 @@ with sqlite3.connect("assets/pokemon_database.db") as conn:
     # Delete tables if they already exist
     c.execute('''DROP TABLE IF EXISTS demo''')
     c.execute('''DROP TABLE IF EXISTS tbl_cards_people''')
+    c.execute('''DROP TABLE IF EXISTS tbl_cart''')
     c.execute('''DROP TABLE IF EXISTS tbl_users''')
     c.execute('''DROP TABLE IF EXISTS tbl_purchase_cards''')
     c.execute('''DROP TABLE IF EXISTS tbl_cards''')
@@ -54,6 +55,15 @@ with sqlite3.connect("assets/pokemon_database.db") as conn:
 				FOREIGN KEY (purchase_id) REFERENCES tbl_purchases(purchase_id),
 				FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)
         	)''')
+    
+    c.execute('''CREATE TABLE tbl_cart (
+        cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        card_id INTEGER,
+        quantity INTEGER DEFAULT 1,
+        FOREIGN KEY (user_id) REFERENCES tbl_users(person_id),
+        FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)
+          )''')
     
     # Insert data into tables
     

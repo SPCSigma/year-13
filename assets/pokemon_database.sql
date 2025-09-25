@@ -4,6 +4,7 @@ PRAGMA foreign_keys = 1;
 -- Drops tables so that the code can reset and the tables only have the stated inserted values
 DROP TABLE IF EXISTS demo;
 DROP TABLE IF EXISTS tbl_cards_people;
+DROP TABLE IF EXISTS tbl_cart;
 DROP TABLE IF EXISTS tbl_users;
 DROP TABLE IF EXISTS tbl_purchase_cards;
 DROP TABLE IF EXISTS tbl_cards;
@@ -105,5 +106,12 @@ INSERT INTO tbl_purchase_cards (purchase_id, card_id) VALUES(1,1);
 INSERT INTO tbl_purchase_cards (purchase_id, card_id) VALUES(2,3);
 INSERT INTO tbl_purchase_cards (purchase_id, card_id) VALUES(3,5);
 
-  
-  
+
+CREATE TABLE tbl_cart (
+    cart_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER,
+    card_id INTEGER,
+    quantity INTEGER DEFAULT 1,
+    FOREIGN KEY (user_id) REFERENCES tbl_users(person_id),
+    FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)
+);
