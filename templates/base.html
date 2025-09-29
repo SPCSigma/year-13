@@ -65,6 +65,7 @@
 </head>
 
 <body>
+  <!-- Top sales bar -->
   <div
     style="width:100%; background-color: #FF6F61; color:white; text-align:center; padding:5px 0; font-weight: bold; font-size: 1.2rem; letter-spacing: 1.5px;">
     <a>SALE ON NOW! UP TO 20% OFF</a>
@@ -90,7 +91,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="/">
+          <a class="nav-link" aria-current="page" href="/cart">
             <svg class="bi pe-none me-2" width="16" height="16"></svg>
             Cart
           </a>
@@ -255,14 +256,14 @@
             </div>
           </div>
         </div>
-        <!-- Add Card Button -->
+        <!-- Add new Card Button -->
         <div class="container mb-4">
           <button type="button" class="btn btn-primary btn-lg w-100" data-bs-toggle="modal"
             data-bs-target="#addCardModal" style="background-color: transparent; border: 2px dotted; font-weight: bold; font-size: 20px; color: #000000;">
             Add card +
           </button>
         </div>
-        <!-- Add Card Modal -->
+        <!-- Add new Card Modal -->
         <div class="modal fade" id="addCardModal" tabindex="-1" aria-labelledby="addCardModalLabel" aria-hidden="true">
           <div class="modal-dialog">
             <form method="POST" action="/add_card">
@@ -308,13 +309,6 @@
                     <strong>Price:</strong> <span style="color:#FF6F61;">NZD ${{ row['card_price'] }}</span>
                   </p>
                   <!-- Add to Cart Button -->
-                  <!-- <form method="POST" action="/add_to_cart">
-                  <input type="hidden" name="card_id" value="{{ row['card_id'] }}">
-                  <button type="submit" class="btn btn-outline-success w-100 mt-2">
-                    Add to cart
-                  </button>
-                  </form> -->
-
                   <form method="POST" action="/add_to_cart">
                   <input type="hidden" name="card_id" value="{{ row['card_id'] }}">
                   <div class="input-group">

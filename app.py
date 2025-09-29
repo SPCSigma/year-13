@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 import sqlite3
 from sqlite3 import Error
 import logging
+from datetime import datetime
 
 app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 # Add secret key for session encryption
@@ -337,6 +338,95 @@ def add_to_cart():
         c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
     conn.commit()
     conn.close()
+    return redirect(url_for('index'))
+
+# Cart page
+@app.route("/cart")
+def cart():
+    logging.debug("Loading cart page")
+    user_id = session.get('user_id')
+    conn = get_db_connection()
+    c = conn.cursor()
+
+    # Get each item in the user's cart, joined with card info
+    cart_items = c.execute("""
+        SELECT tbl_cart.cart_id, tbl_cart.quantity, tbl_cards.card_name, tbl_cards.card_price 
+        FROM tbl_cart
+        JOIN tbl_cards ON tbl_cart.card_id = tbl_cards.card_id
+        WHERE tbl_cart.user_id = ?
+    """, (user_id,)).fetchall()
+
+    # Calculate total
+    cart_total = sum(item['card_price'] * item['quantity'] for item in cart_items)
+    
+    # For toast flash message
+    flash_category = {
+        "danger": "danger",
+        "sucess": "success",
+        "warning": "warning"
+    }
+
+    conn.close()
+    return render_template("cart.html", cart_items=cart_items, cart_total=cart_total, flash_category=flash_category)
+
+
+@app.route("/update_cart", methods=["POST"])
+def update_cart():
+    logging.debug("update_cart() being called")
+    cart_id = request.form.get("cart_id")
+    quantity = int(request.form.get("quantity", 1))
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (quantity, cart_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("cart"))
+
+
+@app.route("/checkout", methods=["POST"])
+def checkout():
+    logging.debug("checkout() called")
+    user_id = session.get('user_id')
+    email = request.form.get('email_address')
+    conn = get_db_connection()
+    c = conn.cursor()
+
+    # Get the name of the user
+    user_row = c.execute("SELECT person_name FROM tbl_users WHERE person_id = ?", (user_id,)).fetchone()
+    person_name = user_row['person_name']
+
+    # Get all the info from the cart
+    cart_items = c.execute("""
+        SELECT tbl_cart.quantity, tbl_cards.card_price
+        FROM tbl_cart
+        JOIN tbl_cards ON tbl_cart.card_id = tbl_cards.card_id
+        WHERE tbl_cart.user_id = ?
+    """, (user_id,)).fetchall()
+    
+    # Check if there are items in the cart
+    if not cart_items or sum(item['quantity'] for item in cart_items) == 0:
+        conn.close()
+        flash("You must have items in your cart to place an order", "danger")
+        return redirect(url_for('cart'))
+    
+    # Get cart price total
+    cart_total = sum(item['card_price'] * item['quantity'] for item in cart_items)
+
+    # Add entry to tbl_purchases
+    logging.debug("Adding purchase entry into database")
+    date_now = datetime.now().strftime("%d-%m-%Y")
+    c.execute("""INSERT INTO tbl_purchases 
+        (purchase_date, name_of_purchaser, total, delivery_address, email_address) 
+        VALUES (?, ?, ?, ?, ?)""",
+        (date_now, person_name, cart_total, "St Pauls Collegiate", email)
+    )
+
+    # Clear cart after purchase
+    c.execute("DELETE FROM tbl_cart WHERE user_id = ?", (user_id, ))
+    conn.commit()
+    conn.close()
+
+    flash("Purchase successful! Thank you for your order.", "success")
     return redirect(url_for('index'))
 
 
