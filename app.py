@@ -180,6 +180,13 @@ def index(admin):
     # Default page view load all items for the user.
     data = {}
     data = get_data(selected_columns, search_data, sort_column, sort_type)
+    
+    # For toast flash message
+    flash_category = {
+        "danger": "danger",
+        "sucess": "success",
+        "warning": "warning"
+    }
 
     # Listen for data returning from the front end.
     if request.method == 'POST':
@@ -237,7 +244,7 @@ def index(admin):
             logging.debug("Processing POST request for update_card_form")
             card_id = request.form.get("updateCardID")
 
-    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin)
+    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin, flash_category=flash_category)
 
 
 @app.route("/edit_card", methods=["POST"])
@@ -370,9 +377,9 @@ def cart():
     return render_template("cart.html", cart_items=cart_items, cart_total=cart_total, flash_category=flash_category)
 
 
-@app.route("/update_cart", methods=["POST"])
-def update_cart():
-    logging.debug("update_cart() being called")
+@app.route("/update_item_cart", methods=["POST"])
+def update_item_cart():
+    logging.debug("update_item_cart() being called")
     cart_id = request.form.get("cart_id")
     quantity = int(request.form.get("quantity", 1))
     conn = get_db_connection()
@@ -382,6 +389,29 @@ def update_cart():
     conn.close()
     return redirect(url_for("cart"))
 
+@app.route("/remove_item_cart", methods=["POST"])
+def remove_item_cart():
+    logging.debug("remove_item_cart() being called")
+    cart_id = request.form.get("cart_id")
+    conn = get_db_connection()
+    c = conn.cursor()
+    
+    # Get the name of item that is being removed from cart
+    remove_item_info = c.execute("""
+        SELECT tbl_cards.card_name FROM tbl_cart
+        JOIN tbl_cards ON tbl_cart.card_id = tbl_cards.card_id
+        WHERE tbl_cart.cart_id = ?
+    """, (cart_id,)).fetchone()
+    item_name = remove_item_info['card_name']
+    flash(f"{item_name} was removed from your cart", "warning")
+    logging.debug(f"{item_name} being removed from Cart ID: {cart_id}")
+    
+    # Remove the item from the cart
+    c.execute("DELETE FROM tbl_cart WHERE cart_id = ?", (cart_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for("cart"))
+    
 
 @app.route("/checkout", methods=["POST"])
 def checkout():

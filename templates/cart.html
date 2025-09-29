@@ -159,15 +159,12 @@
                         </div>
                         {% else %}
                         {% for item in cart_items %}
-                        <div class="cart-item d-flex align-items-center">
-                            <!-- <div class="me-3">O</div> -->
+                        <div class="d-flex align-items-center">
                             <div>
                                 <div class="fw-bold">{{ item['card_name'] }}</div>
-                                <div class="text-muted mb-1">NZD <span class="fw-bold">${{
-                                        "%.2f"|format(item['card_price'])
-                                        }}</span> each</div>
+                                <div class="text-muted mb-1">NZD <span class="fw-bold">${{ "%.2f"|format(item['card_price']) }}</span> each</div>
                                 <!-- Update cart button -->
-                                <form method="POST" action="/update_cart">
+                                <form method="POST" action="/update_item_cart" class="d-inline align-items-center">
                                     <label class="fw-bold me-1">QTY</label>
                                     <select name="quantity" class="form-select form-select-sm d-inline w-auto">
                                         <!-- Checks and shows the correct quantity of cards in cart -->
@@ -179,6 +176,10 @@
                                     <input type="hidden" name="cart_id" value="{{ item['cart_id'] }}">
                                     <button class="btn btn-update-cart btn-sm ms-1" type="submit"
                                         style="color: #57bc84;">Update</button>
+                                </form>
+                                <form method="POST" action="/remove_item_cart" class="d-inline ms-2">
+                                    <input type="hidden" name="cart_id" value="{{ item['cart_id'] }}">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Remove</button>
                                 </form>
                             </div>
                         </div>
