@@ -196,9 +196,8 @@
                     <div class="col-md-5 py-4 d-flex align-items-center">
                         <div class="w-100">
                             <!-- Promo Code Form -->
-                            <form class="mb-4 d-flex" method="GET" action="">
-                                <input type="text" class="form-control me-2"
-                                    placeholder="Add a promo code or a gift card">
+                            <form class="mb-4 d-flex" method="POST" action="/apply_promo">
+                                <input type="text" class="form-control me-2" placeholder="Add a promo code or a gift card" name="promocode">
                                 <button type="submit" class="btn btn-outline-primary">Apply</button>
                             </form>
 
