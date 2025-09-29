@@ -165,7 +165,6 @@ def root():
 
 @app.route("/index", methods=['GET', 'POST'])
 def index():
-
     # Default values
     selected_columns = request.form.getlist('columns')
     if not selected_columns:
@@ -186,6 +185,7 @@ def index():
         "sucess": "success",
         "warning": "warning"
     }
+
 
     # Listen for data returning from the front end.
     if request.method == 'POST':
@@ -239,15 +239,17 @@ def index():
                 data = get_data(selected_columns, search_data,
                                 sort_column, sort_type)
 
-        if action == "update_card_form":
-            logging.debug("Processing POST request for update_card_form")
-            card_id = request.form.get("updateCardID")
+
+    # Getting the person name from the database
+    conn = get_db_connection()
+    c = conn.cursor()
+    user_id = session.get('user_id')
+    user = c.execute('SELECT person_name FROM tbl_users WHERE person_id = ?', (user_id,)).fetchone()
+    username = user['person_name'] if user else 'Unknown User'
     
     # Admin session
     admin = session.get('admin', False)
-    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin, flash_category=flash_category)
-
-
+    return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin, flash_category=flash_category, username=username)
 
 
 @app.route("/edit_card", methods=["POST"])
@@ -308,22 +310,18 @@ def login():
             user_access = check_details['user_access']
             logging.debug("Checking if user is an admin")
             if user_access == 'admin':
-                logging.debug(
-                    f'Admin check -> User {login_username} is an admin')
+                logging.debug(f'Admin check -> User {login_username} is an admin')
                 admin = True
                 session['admin'] = admin
             else:
-                logging.debug(
-                    f'Admin check -> User {login_username} is not an admin')
+                logging.debug(f'Admin check -> User {login_username} is not an admin')
                 admin = False
-            logging.debug(
-                f'login() -> User {login_username} has logged in successfully')
+            logging.debug(f'login() -> User {login_username} has logged in successfully')
             logging.debug(admin)
             flash(f"Login successful", "success")
             return redirect(url_for('index'))
         else:
-            logging.debug(
-                f'login() -> Login attempt failed for user {login_username}')
+            logging.debug(f'login() -> Login attempt failed for user {login_username}')
             flash("Login was unsuccessful, please try again", "danger")
             error = 'Username or password do not match. Please try again'
             return render_template('login.html', error=error, flash_category=flash_category)
