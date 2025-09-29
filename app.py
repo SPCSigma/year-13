@@ -163,9 +163,8 @@ def root():
     return redirect(url_for('login'))
 
 
-@app.route("/index", methods=['GET', 'POST'], defaults={'admin': False})
-@app.route("/index/<admin>", methods=['GET', 'POST'])
-def index(admin):
+@app.route("/index", methods=['GET', 'POST'])
+def index():
 
     # Default values
     selected_columns = request.form.getlist('columns')
@@ -243,8 +242,12 @@ def index(admin):
         if action == "update_card_form":
             logging.debug("Processing POST request for update_card_form")
             card_id = request.form.get("updateCardID")
-
+    
+    # Admin session
+    admin = session.get('admin', False)
     return render_template("base.html", items=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, admin=admin, flash_category=flash_category)
+
+
 
 
 @app.route("/edit_card", methods=["POST"])
@@ -275,6 +278,7 @@ def add_card_route():
     return redirect(url_for('index', admin=True))
 
 
+# Login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():    
     logging.debug('login()')
@@ -291,6 +295,13 @@ def login():
         check_details = cur.execute(
             'SELECT * FROM tbl_users WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
         conn.close()
+        
+        # For toast flash message
+        flash_category = {
+            "danger": "danger",
+            "sucess": "success",
+            "warning": "warning"
+        }
 
         if check_details:
             session['user_id'] = check_details['person_id']
@@ -300,6 +311,7 @@ def login():
                 logging.debug(
                     f'Admin check -> User {login_username} is an admin')
                 admin = True
+                session['admin'] = admin
             else:
                 logging.debug(
                     f'Admin check -> User {login_username} is not an admin')
@@ -307,15 +319,14 @@ def login():
             logging.debug(
                 f'login() -> User {login_username} has logged in successfully')
             logging.debug(admin)
-            # flash(f'Login successful for {login_username, admin}! Redirecting shortly...', 'success')
-            # return render_template('base.html', username=login_username, password=login_password, user_access=user_access, admin=admin)
-            return redirect(url_for('index', admin=admin))
+            flash(f"Login successful", "success")
+            return redirect(url_for('index'))
         else:
             logging.debug(
                 f'login() -> Login attempt failed for user {login_username}')
-            flash('Login was unsuccessful, please try again', 'danger')
+            flash("Login was unsuccessful, please try again", "danger")
             error = 'Username or password do not match. Please try again'
-            return render_template('login.html', error=error)
+            return render_template('login.html', error=error, flash_category=flash_category)
 
     return render_template('login.html', error=error)
 
@@ -430,7 +441,6 @@ def apply_promo():
     return redirect(url_for("cart"))
         
 
-
 @app.route("/checkout", methods=["POST"])
 def checkout():
     logging.debug("checkout() called")
@@ -478,6 +488,11 @@ def checkout():
     return redirect(url_for('index'))
 
 
+@app.route("/logout", methods=["POST"])
+def logout():
+    logging.debug("User is logging out")
+    session.clear()
+    return redirect(url_for("login"))
 
 # running
 if __name__ == "__main__":

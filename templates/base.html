@@ -62,6 +62,20 @@
       width: 155px;
     }
 
+    .add-card-button{
+      background-color: transparent;
+      border: 2px dotted;
+      font-weight: bold;
+      font-size: 20px;
+      color: #000000;
+    }
+
+    .add-card-button:hover{
+      background-color: rgb(0, 115, 255);
+      color: white;
+      border-color: rgb(0, 115, 255);
+    }
+
     .toast-container {
             position: fixed;
             bottom: 2rem;
@@ -105,10 +119,12 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="/login">
-            <svg class="bi pe-none me-2" width="16" height="16"></svg>
-            Logout
-          </a>
+          <form action="/logout" method="post">
+            <button type="submit" class="nav-link btn w-100 text-start">
+              <svg class="bi pe-none me-2" width="16" height="16"></svg>
+              Logout
+            </button>
+          </form>
         </li>
       </ul>
     </div>
@@ -266,8 +282,8 @@
         </div>
         <!-- Add new Card Button -->
         <div class="container mb-4">
-          <button type="button" class="btn btn-primary btn-lg w-100" data-bs-toggle="modal"
-            data-bs-target="#addCardModal" style="background-color: transparent; border: 2px dotted; font-weight: bold; font-size: 20px; color: #000000;">
+          <button type="button" class="btn btn-primary btn-lg w-100 add-card-button" data-bs-toggle="modal"
+            data-bs-target="#addCardModal">
             Add card +
           </button>
         </div>
@@ -393,21 +409,21 @@
 
   <!-- Toast popup message -->
   <div aria-live="polite" aria-atomic="true" class="toast-container">
-      {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-      {% for category, message in messages %}
-      <div class="toast align-items-center text-white bg-{{ flash_category.get(category, 'primary') }} show"
-          role="alert" aria-live="assertive" aria-atomic="true" style="border: none;">
-          <div class="d-flex">
-              <div class="toast-body">
-                  {{ message }}
-              </div>
-              <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-      </div>
-      {% endfor %}
-      {% endif %}
-      {% endwith %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="toast align-items-center text-white bg-{{ flash_category.get(category, 'primary') }} show"
+        role="alert" aria-live="assertive" aria-atomic="true" style="border: none;">
+        <div class="d-flex">
+            <div class="toast-body">
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
   </div>
 
   <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
