@@ -46,6 +46,15 @@
       height: 100%;
     }
 
+    main.d-flex {
+      height: calc(100vh - 34px);
+    }
+    
+    .content-scrollable {
+      overflow-y: auto;
+      height: 100%;
+    }
+
     .hr-sidebar {
       border: 1px solid black;
     }
@@ -77,12 +86,12 @@
     }
 
     .toast-container {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            z-index: 1080;
-            min-width: 360px;
-        }
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 1080;
+      min-width: 360px;
+    }
   </style>
 </head>
 
@@ -94,7 +103,7 @@
   </div>
   <main class="d-flex">
     <!-- Sidebar -->
-    <div class="d-flex flex-column p-3 sidebar sidebar-colour" style="width: 280px; height: 100vh; display: flex;">
+    <div class="d-flex flex-column p-3 sidebar sidebar-colour" style="width: 280px;">
       <a href="/index" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
         href="#">
         <svg xmlns="http://www.w3.org/2000/svg" width="40" height="32" fill="currentColor" class="bi bi-house"
@@ -107,7 +116,7 @@
       <hr class="hr-sidebar">
       <ul class="nav nav-pills flex-column mb-auto" id="navigation">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="">
+          <a class="nav-link active" aria-current="page" href="/index">
             <svg class="bi pe-none me-2" width="16" height="16"></svg>
             Home
           </a>
@@ -118,6 +127,14 @@
             Cart
           </a>
         </li>
+        {% if admin %}
+        <li class="nav-item">
+          <a class="nav-link" aria-current="page" href="/purchases">
+            <svg class="bi pe-none me-2" width="16" height="16"></svg>
+            Purchases
+          </a>
+        </li>
+        {% endif %}
       </ul>
       <hr class="hr-sidebar">
       <div class="dropdown">
@@ -129,18 +146,26 @@
           <strong>{{ username }}</strong>
         </a>
         <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
+          {% if username != 'Not logged in'%}
           <li>
-            <form action="/logout" method="post" class="mb-0">
+              <form action="/logout" method="POST" class="mb-0">
               <button type="submit" class="dropdown-item">Log out</button>
-            </form>
+              </form>
           </li>
+          {% else %}
+          <li>
+              <form action="/logout" method="POST" class="mb-0">
+              <button type="submit" class="dropdown-item">Log in</button>
+              </form>
+          </li>
+          {% endif %}
         </ul>
       </div>
     </div>
 
 
     <!-- Content -->
-    <div class="tab-content flex-grow-1 pt-2 main-body-colour px-4">
+    <div class="tab-content flex-grow-1 pt-3 main-body-colour px-4 content-scrollable">
       <!-- All Items Page -->
       <div class="tab-pane fade show active" id="items">
 

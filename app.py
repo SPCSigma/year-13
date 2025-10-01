@@ -245,7 +245,8 @@ def index():
     c = conn.cursor()
     user_id = session.get('user_id')
     user = c.execute('SELECT person_name FROM tbl_users WHERE person_id = ?', (user_id,)).fetchone()
-    username = user['person_name'] if user else 'Unknown User'
+    username = user['person_name'] if user else 'Not logged in'
+    logging.debug(f"User is {username}")
     
     # Admin session
     admin = session.get('admin', False)
@@ -260,23 +261,28 @@ def edit_card():
     card_price = request.form.get("card_price")
     update_card_data = (card_name, card_rarity, card_price, card_id)
     update_card(update_card_data)
+    logging.debug(f"edit_card(). Editing card {card_id}")
     return redirect(url_for('index', admin=True))
 
 
 @app.route("/delete_card", methods=['POST'])
-def delete_card_route():
+def delete_card():
+    logging.debug("delete_card() called")
     card_id = request.form.get("card_id")
     delete_card(card_id)
+    logging.debug(f"Deleting card {card_id}")
     return redirect(url_for('index', admin=True))
 
 
 @app.route("/add_card", methods=["POST"])
-def add_card_route():
+def add_card():
+    logging.debug("add_card(). Adding new card")
     card_name = request.form.get("addCardName")
     card_rarity = request.form.get("cardRarity")
     card_price = request.form.get("cardPrice")
     add_card_data = (card_name, card_rarity, card_price)
     add_card(add_card_data)
+    logging.debug(f"Adding a new card: {card_name}, {card_rarity}, {card_price} to database")
     return redirect(url_for('index', admin=True))
 
 
@@ -363,10 +369,10 @@ def add_to_cart():
     return redirect(url_for('index'))
 
 # Cart page
-@app.route("/cart")
+@app.route("/cart", methods=["GET", "POST"])
 def cart():
-    logging.debug("Loading cart page")
     user_id = session.get('user_id')
+    logging.debug("Loading cart page")
     conn = get_db_connection()
     c = conn.cursor()
 
@@ -387,9 +393,16 @@ def cart():
         "sucess": "success",
         "warning": "warning"
     }
-
+    
+    # Getting the person name from the database
+    user = c.execute('SELECT person_name FROM tbl_users WHERE person_id = ?', (user_id,)).fetchone()
+    username = user['person_name'] if user else 'Not logged in'
+    logging.debug(f"User is {username}")
     conn.close()
-    return render_template("cart.html", cart_items=cart_items, cart_total=cart_total, flash_category=flash_category)
+    
+    # Admin session
+    admin = session.get('admin', False)
+    return render_template("cart.html", cart_items=cart_items, cart_total=cart_total, flash_category=flash_category, username=username, admin=admin)
 
 
 @app.route("/update_item_cart", methods=["POST"])
@@ -431,6 +444,7 @@ def remove_item_cart():
 
 @app.route("/apply_promo", methods=["POST"])
 def apply_promo():
+    logging.debug("apply_promo(). User is trying to apply a promo code")
     promocode = request.form.get("promocode")
     if promocode == "supersecretpromocode":
         flash("Promo code is successful", "success")
@@ -492,6 +506,93 @@ def logout():
     session.clear()
     return redirect(url_for("login"))
 
+
+# Purchases page
+@app.route("/purchases", methods=["GET", "POST"])
+def purchases():
+    logging.debug("purchases() page called")
+    conn = get_db_connection()
+    c = conn.cursor()
+    purchases = c.execute("""
+        SELECT purchase_id, purchase_date, name_of_purchaser, total, delivery_address, email_address
+        FROM tbl_purchases
+    """).fetchall()
+    
+    # Getting the person name from the database
+    user_id = session.get('user_id')
+    user = c.execute('SELECT person_name FROM tbl_users WHERE person_id = ?', (user_id,)).fetchone()
+    username = user['person_name'] if user else 'Not logged in'
+    logging.debug(f"User is {username}")
+    conn.close()
+    
+    # For toast flash message
+    flash_category = {
+        "danger": "danger",
+        "sucess": "success",
+        "warning": "warning"
+    }
+    
+    
+    # Admin session
+    admin = session.get('admin', False)
+    return render_template("purchases.html", purchases=purchases, username=username, admin=admin, flash_category=flash_category )
+
+
+@app.route('/edit_purchase', methods=['POST'])
+def edit_purchase():
+    logging.debug("edit_purchase() called")
+    purchase_id = request.form['purchase_id']
+    name_of_purchaser = request.form['name_of_purchaser']
+    total = request.form['total']
+    delivery_address = request.form['delivery_address']
+    email_address = request.form['email_address']
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("""
+        UPDATE tbl_purchases
+        SET name_of_purchaser = ?, total = ?, delivery_address = ?, email_address = ?
+        WHERE purchase_id = ?
+    """, (name_of_purchaser, total, delivery_address, email_address, purchase_id))
+    conn.commit()
+    conn.close()
+    logging.debug(f"Editing purchase {purchase_id}")
+    flash('Purchase updated.', 'success')
+    return redirect(url_for('purchases'))
+
+
+@app.route('/delete_purchase', methods=['POST'])
+def delete_purchase():
+    logging.debug("delete_purchase() called")
+    purchase_id = request.form['purchase_id']
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM tbl_purchases WHERE purchase_id = ?", (purchase_id,))
+    conn.commit()
+    conn.close()
+    logging.debug(f"Deleting purchase {purchase_id}")
+    flash('Purchase deleted.', 'warning')
+    return redirect(url_for('purchases'))
+
+
+@app.route('/add_purchase', methods=['POST'])
+def add_purchase():
+    logging.debug("add_purchase() called")
+    name_of_purchaser = request.form['name_of_purchaser']
+    total = request.form['total']
+    delivery_address = request.form['delivery_address']
+    email_address = request.form['email_address']
+    purchase_date = request.form["purchasedate"]
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute(
+        "INSERT INTO tbl_purchases (purchase_date, name_of_purchaser, total, delivery_address, email_address) VALUES (?, ?, ?, ?, ?)",
+        (purchase_date, name_of_purchaser, total, delivery_address, email_address)
+    )
+    conn.commit()
+    conn.close()
+    logging.debug("New purchase added")
+    flash("Purchase added.", "success")
+    return redirect(url_for('purchases'))
 # running
 if __name__ == "__main__":
     # deleteusercuzidontlikeyou = delete_user('1')

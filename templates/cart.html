@@ -46,6 +46,15 @@
             height: 100%;
         }
 
+        main.d-flex{
+            height: calc(100vh - 34px);
+        }
+
+        .content-scrollable {
+            overflow-y: auto;
+            height: 100%;
+        }
+
         .hr-sidebar {
             border: 1px solid black;
         }
@@ -96,7 +105,7 @@
     </div>
     <main class="d-flex">
         <!-- Sidebar -->
-        <div class="d-flex flex-column p-3 sidebar sidebar-colour" style="width: 280px; height: 100vh; display: flex;">
+        <div class="d-flex flex-column p-3 sidebar sidebar-colour" style="width: 280px;">
             <a href="/index" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none"
                 href="#">
                 <svg xmlns="http://www.w3.org/2000/svg" width="40" height="32" fill="currentColor" class="bi bi-house"
@@ -120,6 +129,14 @@
                         Cart
                     </a>
                 </li>
+                {% if admin %}
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="/purchases">
+                        <svg class="bi pe-none me-2" width="16" height="16"></svg>
+                        Purchases
+                    </a>
+                </li>
+                {% endif %}
             </ul>
             <hr class="hr-sidebar">
             <div class="dropdown">
@@ -131,21 +148,29 @@
                 <strong>{{ username }}</strong>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                <li>
-                    <form action="/logout" method="post" class="mb-0">
-                    <button type="submit" class="dropdown-item">Log out</button>
-                    </form>
-                </li>
+                    {% if username != 'Not logged in'%}
+                    <li>
+                        <form action="/logout" method="POST" class="mb-0">
+                        <button type="submit" class="dropdown-item">Log out</button>
+                        </form>
+                    </li>
+                    {% else %}
+                    <li>
+                        <form action="/logout" method="POST" class="mb-0">
+                        <button type="submit" class="dropdown-item">Log in</button>
+                        </form>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
 
 
         <!-- Content -->
-        <div class="tab-content flex-grow-1 pt-2 main-body-colour px-4">
+        <div class="tab-content flex-grow-1 pt-2 main-body-colour px-4 content-scrollable">
 
             <div class="container mt-4">
-                <div class="row p-4" style="background-color: white;">
+                <div class="row p-4" style="background-color: white; border-radius: 7px;">
                     <div>
                         <p class="text-center fw-bold fs-2">Cart</p>
                     </div>
