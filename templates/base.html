@@ -9,7 +9,7 @@
   <meta name="description" content="">
   <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
   <meta name="generator" content="Hugo 0.122.0">
-  <title>James' Coffee Shop</title>
+  <title>James' Pokemon Shop</title>
 
   <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/sidebars/">
 
@@ -69,6 +69,10 @@
 
     .search-width {
       width: 155px;
+    }
+    
+    .sort-width {
+      width: 300px;
     }
 
     .add-card-button{
@@ -182,11 +186,13 @@
 
         <!-- Filter and Sort Button -->
         <div class="mb-3 d-flex align-items-center">
-          <!-- Filter button modal -->
+          <!-- Filter button modal - Admin Only-->
+           {% if admin %}
           <button type="button" class="btn btn-secondary filter-width me-2" data-bs-toggle="modal"
             data-bs-target="#filterModal">
             Filters
           </button>
+          {% endif %}
           <!-- Sorting buttons -->
           <form class="d-flex flex-grow-1" method="POST" name="sort" role="sort">
             <input type="hidden" name="action" value="sort">
@@ -208,7 +214,7 @@
             <input type="hidden" name="columns" value="{{ column }}">
             {% endfor %}
             {% endif %}
-            <button class="btn btn-primary w-25" type="submit" name="action" value="sort">Sort</button>
+            <button class="btn btn-primary sort-width" type="submit" name="action" value="sort">Sort</button>
           </form>
         </div>
 
