@@ -280,42 +280,6 @@ def login():
     return render_template('login.html', error=error)
 
 
-@app.route("/add_to_cart", methods=["POST"])
-def add_to_cart():
-    logging.debug("add_to_cart() called")
-    user_id = session.get('user_id')
-    if not user_id:
-        flash("You must be logged in to add items to your cart.", "warning")
-        return redirect(url_for('login'))
-    # Retrieve add_to_cart() information from the frontend
-    card_id = request.form.get("card_id")
-    quantity = int(request.form.get("quantity", 1))
-    logging.debug(f"User {user_id} is attempting to add card {card_id} with quantity {quantity} to cart")
-    conn = get_db_connection()
-    c = conn.cursor()
-    
-    # Get card info
-    card_info = c.execute("SELECT card_name FROM tbl_cards WHERE card_id = ?", (card_id,)).fetchone()
-    card_name = card_info['card_name']
-    flash(f"{card_name} was added to your cart.", "success")
-    
-    # Check if item is already in cart
-    check_cart = c.execute("SELECT * FROM tbl_cart WHERE user_id = ? AND card_id = ?", (user_id, card_id)).fetchone()
-    if check_cart:
-        # Update quantity
-        previous_quantity = check_cart['quantity']
-        new_quantity = previous_quantity + quantity
-        logging.debug(f"Card is already in cart. Previous quantity: {previous_quantity}. New quantity after adding: {new_quantity}.")
-        c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (new_quantity, check_cart['cart_id']))
-    else:
-        # Insert card into cart
-        logging.debug(f"Adding card to cart. New quantity after adding: {new_quantity}.")
-        c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
-    conn.commit()
-    conn.close()
-    flash(f"'{card_name}' was added to your cart.", "success")
-    return redirect(url_for('index'))
-
 # Cart page
 @app.route("/cart", methods=["GET", "POST"])
 def cart():
@@ -357,6 +321,42 @@ def cart():
     return render_template("cart.html", cart_items=cart_items, cart_total=cart_total, flash_category=flash_category, username=username, admin=admin)
 
 
+@app.route("/add_to_cart", methods=["POST"])
+def add_to_cart():
+    logging.debug("add_to_cart() called")
+    user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be logged in to add items to your cart.", "warning")
+        return redirect(url_for('login'))
+    # Retrieve add_to_cart() information from the frontend
+    card_id = request.form.get("card_id")
+    quantity = int(request.form.get("quantity", 1))
+    logging.debug(f"User {user_id} is attempting to add card {card_id} with quantity {quantity} to cart")
+    conn = get_db_connection()
+    c = conn.cursor()
+    
+    # Get card info
+    card_info = c.execute("SELECT card_name FROM tbl_cards WHERE card_id = ?", (card_id,)).fetchone()
+    card_name = card_info['card_name']
+    
+    # Check if item is already in cart
+    check_cart = c.execute("SELECT * FROM tbl_cart WHERE user_id = ? AND card_id = ?", (user_id, card_id)).fetchone()
+    if check_cart:
+        # Update quantity
+        previous_quantity = check_cart['quantity']
+        new_quantity = previous_quantity + quantity
+        logging.debug(f"Card is already in cart. Previous quantity: {previous_quantity}. New quantity after adding: {new_quantity}.")
+        c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (new_quantity, check_cart['cart_id']))
+    else:
+        # Insert card into cart
+        logging.debug(f"Adding card to cart. New quantity after adding: {quantity}.")
+        c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
+    conn.commit()
+    conn.close()
+    flash(f"'{card_name}' was added to your cart.", "success")
+    return redirect(url_for('index'))
+
+
 @app.route("/update_item_cart", methods=["POST"])
 def update_item_cart():
     logging.debug("update_item_cart() being called")
@@ -375,7 +375,7 @@ def update_item_cart():
 
 
 @app.route("/remove_item_cart", methods=["POST"])
-def remove_item_cart():
+def remove_item_cart(): 
     logging.debug("remove_item_cart() being called")
     cart_id = request.form.get("cart_id")
     conn = get_db_connection()
@@ -388,7 +388,6 @@ def remove_item_cart():
         WHERE tbl_cart.cart_id = ?
     """, (cart_id,)).fetchone()
     item_name = remove_item_info['card_name']
-    flash(f"{item_name} was removed from your cart", "warning")
     logging.debug(f"{item_name} being removed from Cart ID: {cart_id}")
     
     # Remove the item from the cart
@@ -569,8 +568,6 @@ def add_purchase():
     logging.debug("New purchase added")
     flash("New purchase has been added.", "success")
     return redirect(url_for('purchases'))
-
-
 
 
 # running
