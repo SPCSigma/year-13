@@ -166,6 +166,7 @@ def index():
 
 @app.route("/edit_card", methods=["POST"])
 def edit_card():
+    # Retrieve edit_card() information from the frontend
     card_id = request.form.get("card_id")
     card_name = request.form.get("card_name")
     card_rarity = request.form.get("card_rarity")
@@ -174,6 +175,7 @@ def edit_card():
     logging.debug(f"edit_card(). Editing card {card_id}")
     
     conn = get_db_connection()
+    # Edit the card information in the database
     sql = """UPDATE tbl_cards SET
     card_name = ?,
     card_rarity = ?,
@@ -193,10 +195,11 @@ def edit_card():
 @app.route("/delete_card", methods=['POST'])
 def delete_card():
     logging.debug("delete_card() called")
+    # Retrieve card_id that is being deleted
     card_id = request.form.get("card_id")
-    
     conn = get_db_connection()
     c = conn.cursor()
+    # Delete card in database
     card = c.execute("SELECT card_name FROM tbl_cards WHERE card_id = ?", (card_id,)).fetchone()
     card_name = card['card_name']
     
@@ -215,6 +218,7 @@ def delete_card():
 @app.route("/add_card", methods=["POST"])
 def add_card():
     logging.debug("add_card(). Adding new card")
+    # Retrieve add_card() information from the frontend
     card_name = request.form.get("addCardName")
     card_rarity = request.form.get("cardRarity")
     card_price = request.form.get("cardPrice")
@@ -262,6 +266,7 @@ def login():
         conn.close()
         
         if check_details:
+            # Check if the logged in user is an admin
             session['user_id'] = check_details['person_id']
             session['admin'] = check_details['user_access'] == 'admin'
             flash("Login successful", "success")
@@ -282,6 +287,7 @@ def add_to_cart():
     if not user_id:
         flash("You must be logged in to add items to your cart.", "warning")
         return redirect(url_for('login'))
+    # Retrieve add_to_cart() information from the frontend
     card_id = request.form.get("card_id")
     quantity = int(request.form.get("quantity", 1))
     logging.debug(f"User {user_id} is attempting to add card {card_id} with quantity {quantity} to cart")
@@ -354,10 +360,12 @@ def cart():
 @app.route("/update_item_cart", methods=["POST"])
 def update_item_cart():
     logging.debug("update_item_cart() being called")
+    # Retrieve update_item_cart() information from frontend
     cart_id = request.form.get("cart_id")
     quantity = int(request.form.get("quantity", 1))
     conn = get_db_connection()
     c = conn.cursor()
+    # Update cart in database
     c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (quantity, cart_id))
     conn.commit()
     conn.close()
@@ -396,6 +404,7 @@ def remove_item_cart():
 def apply_promo():
     logging.debug("apply_promo(). User is trying to apply a promo code")
     promocode = request.form.get("promocode")
+    # Check if promo code is valid
     if promocode == "supersecretpromocode":
         flash("Promo code applied successfully!", "success")
     else:
@@ -450,10 +459,12 @@ def checkout():
     return redirect(url_for('index'))
 
 
+# Logout Route
 @app.route("/logout", methods=["GET", "POST"])
 def logout():
     logging.debug("User is logging out")
     flash("You have been logged out.", "success")
+    # Clear the website session and log out
     session.clear()
     return redirect(url_for("login"))
 
@@ -499,6 +510,7 @@ def purchases():
 @app.route('/edit_purchase', methods=['POST'])
 def edit_purchase():
     logging.debug("edit_purchase() called")
+    # Retrieve edit_purchase() information from front end
     purchase_id = request.form['purchase_id']
     name_of_purchaser = request.form['name_of_purchaser']
     total = request.form['total']
@@ -506,6 +518,7 @@ def edit_purchase():
     email_address = request.form['email_address']
     conn = get_db_connection()
     c = conn.cursor()
+    # Edit the purchase information in database
     c.execute("""
         UPDATE tbl_purchases
         SET name_of_purchaser = ?, total = ?, delivery_address = ?, email_address = ?
@@ -521,9 +534,11 @@ def edit_purchase():
 @app.route('/delete_purchase', methods=['POST'])
 def delete_purchase():
     logging.debug("delete_purchase() called")
+    # Retrieve the id of the purchase that is being removed
     purchase_id = request.form['purchase_id']
     conn = get_db_connection()
     c = conn.cursor()
+    # Delete purchase from database
     c.execute("DELETE FROM tbl_purchase_cards WHERE purchase_id = ?", (purchase_id,))
     c.execute("DELETE FROM tbl_purchases WHERE purchase_id = ?", (purchase_id,))
     conn.commit()
@@ -536,6 +551,7 @@ def delete_purchase():
 @app.route('/add_purchase', methods=['POST'])
 def add_purchase():
     logging.debug("add_purchase() called")
+    # Retrieve add_purchase() information from frontend
     name_of_purchaser = request.form['name_of_purchaser']
     total = request.form['total']
     delivery_address = request.form['delivery_address']
@@ -543,6 +559,7 @@ def add_purchase():
     purchase_date = request.form["purchase_date"]
     conn = get_db_connection()
     c = conn.cursor()
+    # Add purchase into database
     c.execute(
         "INSERT INTO tbl_purchases (purchase_date, name_of_purchaser, total, delivery_address, email_address) VALUES (?, ?, ?, ?, ?)",
         (purchase_date, name_of_purchaser, total, delivery_address, email_address)
