@@ -38,7 +38,7 @@ def get_db_connection():
 
 def get_data(selected_columns, search_data, sort_column, sort_type):
     conn = get_db_connection()
-    cur = conn.cursor()
+    c = conn.cursor()
 
     logging.debug("Getting all table data from the SQL database")
 
@@ -54,25 +54,23 @@ def get_data(selected_columns, search_data, sort_column, sort_type):
     sql = f"""
     SELECT {columns_to_select} FROM tbl_cards
     WHERE (
-        card_id LIKE '%{search_data}%' OR
-        card_name LIKE '%{search_data}%' OR
-        card_rarity LIKE '%{search_data}%' OR
-        card_price LIKE '%{search_data}%'
+        card_id LIKE ? OR
+        card_name LIKE ? OR
+        card_rarity LIKE ? OR
+        card_price LIKE ?
     )
     ORDER BY {sort_column} {sort_type}
     """
 
-    logging.debug(sql)
+    search_querry = f'%{search_data}%'
+    search_parameters = (search_querry, search_querry, search_querry, search_querry)
 
     # Log the action information
-    logging.debug(
-        f"Getting table data with [{selected_columns, search_data, sort_column, sort_type}]")
-
+    logging.debug(f"Running SQL code {sql} with paramters {search_parameters}")
     # Execute the sql query and fetch all results
-    items = cur.execute(sql).fetchall()
+    items = c.execute(sql, search_parameters).fetchall()
 
     # Close the database connection
-    conn.commit()
     conn.close()
 
     return items
@@ -152,65 +150,13 @@ def index():
     }
 
 
-    # Listen for data returning from the front end.
-    if request.method == 'POST':
-        action = request.form.get("action")
-
-        if action == 'search':
-            logging.debug("Processing POST request for search")
-            search_data = request.form.get("search_data", "")
-            selected_columns = request.form.getlist("columns")
-            sort_type = request.form.get("sort_type", "")
-            sort_column = request.form.get("sort_column", "")
-
-            if selected_columns:
-                data = get_data(selected_columns, search_data,
-                                sort_column, sort_type)
-            if not selected_columns:
-                selected_columns = ['card_id', 'card_name',
-                                    'card_rarity', 'card_price']
-                data = get_data(selected_columns, search_data,
-                                sort_column, sort_type)
-
-        if action == 'filter':
-            logging.debug("Processing POST request for filter")
-            search_data = request.form.get("search_data", "")
-            selected_columns = request.form.getlist("columns")
-            sort_type = request.form.get("sort_type", "ASC")
-            sort_column = request.form.get("sort_column", "card_id")
-
-            if selected_columns:
-                data = get_data(selected_columns, search_data,
-                                sort_column, sort_type)
-            if not selected_columns:
-                selected_columns = ['card_id', 'card_name',
-                                    'card_rarity', 'card_price']
-                data = get_data(selected_columns, search_data,
-                                sort_column, sort_type)
-
-        if action == 'sort':
-            logging.debug("Processing POST request for sort")
-            search_data = request.form.get("search_data", "")
-            selected_columns = request.form.getlist("columns")
-            sort_type = request.form.get("sort_type", "")
-            sort_column = request.form.get("sort_column", "")
-
-            if selected_columns:
-                data = get_data(selected_columns, search_data,
-                                sort_column, sort_type)
-            if not selected_columns:
-                selected_columns = ['card_id', 'card_name',
-                                    'card_rarity', 'card_price']
-                data = get_data(selected_columns, search_data,
-                                sort_column, sort_type)
-
-
     # Getting the person name from the database
     conn = get_db_connection()
     c = conn.cursor()
     user_id = session.get('user_id')
     user = c.execute('SELECT person_name FROM tbl_users WHERE person_id = ?', (user_id,)).fetchone()
     username = user['person_name'] if user else 'Not logged in'
+    conn.close()
     logging.debug(f"User is {username}")
     
     # Admin session
@@ -231,7 +177,7 @@ def edit_card():
     sql = """UPDATE tbl_cards SET
     card_name = ?,
     card_rarity = ?,
-    card_price = ?,
+    card_price = ?
     WHERE card_id = ?
     """
     affected_rows = conn.execute(sql, update_card_data).rowcount
@@ -240,16 +186,30 @@ def edit_card():
     conn.commit()
     conn.close()
     
-    return redirect(url_for('index', admin=True))
+    flash(f"{card_name} has been updated.", "success")
+    return redirect(url_for('index'))
 
 
 @app.route("/delete_card", methods=['POST'])
 def delete_card():
     logging.debug("delete_card() called")
     card_id = request.form.get("card_id")
-    delete_card(card_id)
-    logging.debug(f"Deleting card {card_id}")
-    return redirect(url_for('index', admin=True))
+    
+    conn = get_db_connection()
+    c = conn.cursor()
+    card = c.execute("SELECT card_name FROM tbl_cards WHERE card_id = ?", (card_id,)).fetchone()
+    card_name = card['card_name']
+    
+    # Delete card from tables it exists in
+    c.execute("DELETE FROM tbl_purchase_cards WHERE card_id = ?", (card_id,))
+    c.execute("DELETE FROM tbl_cards_people WHERE card_id = ?", (card_id,))
+    c.execute("DELETE FROM tbl_cards WHERE card_id = ?", (card_id,))
+    conn.commit()
+    conn.close()
+
+    logging.debug(f"{card_id} has been deleted")
+    flash(f"'{card_name}' has been deleted.", "warning")
+    return redirect(url_for('index'))
 
 
 @app.route("/add_card", methods=["POST"])
@@ -259,9 +219,21 @@ def add_card():
     card_rarity = request.form.get("cardRarity")
     card_price = request.form.get("cardPrice")
     add_card_data = (card_name, card_rarity, card_price)
-    add_card(add_card_data)
+    conn = get_db_connection()
+    c = conn.cursor()
+    # Add new card into database
+    sql = """INSERT INTO tbl_cards
+    card_name = ?,
+    card_rarity = ?,
+    card_price = ?
+    """
+    c.execute(sql, add_card_data)
+    conn.commit()
+    conn.close()
+    
+    flash(f"New card '{card_name}' has been added.", "success")
     logging.debug(f"Adding a new card: {card_name}, {card_rarity}, {card_price} to database")
-    return redirect(url_for('index', admin=True))
+    return redirect(url_for('index'))
 
 
 # Login page
@@ -275,12 +247,7 @@ def login():
         login_password = request.form.get('login_password')
 
         conn = get_db_connection()
-        cur = conn.cursor()
-
-        # Check if user exists and password is correct
-        check_details = cur.execute(
-            'SELECT * FROM tbl_users WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
-        conn.close()
+        c = conn.cursor()
         
         # For toast flash message
         flash_category = {
@@ -289,20 +256,15 @@ def login():
             "warning": "warning"
         }
 
+        # Check if user exists and password is correct
+        check_details = c.execute(
+            'SELECT * FROM tbl_users WHERE username = ? AND password = ?', (login_username, login_password)).fetchone()
+        conn.close()
+        
         if check_details:
             session['user_id'] = check_details['person_id']
-            user_access = check_details['user_access']
-            logging.debug("Checking if user is an admin")
-            if user_access == 'admin':
-                logging.debug(f'Admin check -> User {login_username} is an admin')
-                admin = True
-                session['admin'] = admin
-            else:
-                logging.debug(f'Admin check -> User {login_username} is not an admin')
-                admin = False
-            logging.debug(f'login() -> User {login_username} has logged in successfully')
-            logging.debug(admin)
-            flash(f"Login successful", "success")
+            session['admin'] = check_details['user_access'] == 'admin'
+            flash("Login successful", "success")
             return redirect(url_for('index'))
         else:
             logging.debug(f'login() -> Login attempt failed for user {login_username}')
@@ -317,6 +279,9 @@ def login():
 def add_to_cart():
     logging.debug("add_to_cart() called")
     user_id = session.get('user_id')
+    if not user_id:
+        flash("You must be logged in to add items to your cart.", "warning")
+        return redirect(url_for('login'))
     card_id = request.form.get("card_id")
     quantity = int(request.form.get("quantity", 1))
     logging.debug(f"User {user_id} is attempting to add card {card_id} with quantity {quantity} to cart")
@@ -337,10 +302,8 @@ def add_to_cart():
         logging.debug(f"Card is already in cart. Previous quantity: {previous_quantity}. New quantity after adding: {new_quantity}.")
         c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (new_quantity, check_cart['cart_id']))
     else:
-        # Insert new card into cart
-        previous_quantity = 0
-        new_quantity = quantity
-        logging.debug(f"Card not previously in cart. Previous quantity: 0. New quantity after adding: {new_quantity}.")
+        # Insert card into cart
+        logging.debug(f"Adding card to cart. New quantity after adding: {new_quantity}.")
         c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
     conn.commit()
     conn.close()
@@ -461,9 +424,9 @@ def checkout():
     """, (user_id,)).fetchall()
     
     # Check if there are items in the cart
-    if not cart_items or sum(item['quantity'] for item in cart_items) == 0:
+    if not cart_items:
         conn.close()
-        flash("You must have items in your cart to place an order", "danger")
+        flash("Your cart is empty.", "danger")
         return redirect(url_for('cart'))
     
     # Get cart price total
@@ -524,15 +487,9 @@ def purchases():
     sort_column = request.form.get("sort_column", "purchase_id")
     sort_type = request.form.get("sort_type", "ASC")
     
-    if request.method == 'GET' and not selected_columns:
-        selected_columns = ['purchase_id', 'purchase_date', 'name_of_purchaser', 'total', 'delivery_address', 'email_address']
-        # Not sure if this is needed NOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTE
-    
     # Default page view load all items for the user.
     data = {}
     data = get_data_purchases(selected_columns, search_data, sort_column, sort_type)
-    
-    
     
     # Admin session
     admin = session.get('admin', False)
