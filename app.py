@@ -77,85 +77,50 @@ def get_data(selected_columns, search_data, sort_column, sort_type):
 
     return items
 
-
-def delete_user(person_id):
-    logging.debug(f"Deleting row {person_id} from tbl_users")
+def get_data_purchases(selected_columns, search_data, sort_column, sort_type):
     conn = get_db_connection()
     c = conn.cursor()
-    sql1 = """DELETE FROM tbl_cards_people WHERE person_id = ?"""
+    logging.debug("Getting all purchase table data from SQL database")
+    
+    # Select all columns if none are selected
+    if not selected_columns:
+        selected_columns = ['purchase_id', 'purchase_date', 'name_of_purchaser', 
+                            'total', 'delivery_address', 'email_address']
+    
+    # Convert the list of columns into a string separated by commas
+    columns_to_select = ", ".join(selected_columns)
+    
+    
+    # Adjust numeric columns to ensure proper formatting
+    if 'total' in selected_columns:
+        columns_to_select = columns_to_select.replace(
+            'total', "printf('%.2f', total) AS total")
+    
+    
+    sql = f"""
+    SELECT {columns_to_select} 
+    FROM tbl_purchases 
+    WHERE (
+        purchase_id LIKE ? OR
+        purchase_date LIKE ? OR
+        name_of_purchaser LIKE ? OR
+        total LIKE ? OR
+        delivery_address LIKE ? OR
+        email_address LIKE ?
+    )
+    ORDER BY {sort_column} {sort_type}
+    """
+    
+    search_querry = f'%{search_data}%'
+    search_parameters = (search_querry, search_querry, search_querry, search_querry, search_querry, search_querry)
+    # Log the action information
+    logging.debug(f"Running SQL code {sql} with paramters {search_parameters}")
 
-    c.execute(sql1, (person_id,))
-    cards_affected_rows = c.rowcount
-    logging.debug(
-        f"delete_user() -> Deleted {cards_affected_rows} rows from tbl_cards_people")
 
-    sql2 = """DELETE FROM tbl_users WHERE person_id = ?"""
-    c.execute(sql2, (person_id,))
-    users_affected_rows = c.rowcount
-    logging.debug(
-        f"Delete_user() -> Deleted user {person_id}. Rows: {users_affected_rows} deleted")
-
-    conn.commit()
+    purchase = c.execute(sql, search_parameters).fetchall()
     conn.close()
-    total_affected_rows = cards_affected_rows + users_affected_rows
-
-    return total_affected_rows
-
-
-def update_card(update_card_data):
-    card_name, card_rarity, card_price, card_id = update_card_data
-    logging.debug(f"Updating data in row {card_id} in tbl_cards")
-    conn = get_db_connection()
-    sql = """UPDATE tbl_cards SET
-            card_name = ?,
-            card_rarity = ?,
-            card_price = ?
-            WHERE card_id = ?
-            """
-    affected_rows = conn.execute(sql, update_card_data).rowcount
-    logging.debug(
-        f"update_card() -> Number of affected rows for card id: {card_id} is {affected_rows} row(s)")
-    conn.commit()
-    conn.close()
-
-
-def add_card(add_card_data):
-    logging.debug(f"Adding a card with data: {add_card_data}")
-    sql = """INSERT INTO tbl_cards (card_name, card_picture, card_rarity, card_price) VALUES (?, NULL, ?, ?)"""
-    conn = get_db_connection()
-    c = conn.cursor()
-    new_item_id = c.execute(sql, add_card_data).lastrowid
-    logging.debug(
-        f"add_card() -> New card successfully added with ID: {new_item_id}")
-    conn.commit()
-    conn.close()
-
-
-def delete_card(card_id):
-    conn = get_db_connection()
-    c = conn.cursor()
-
-    sql1 = """DELETE FROM tbl_purchase_cards WHERE card_id = ?"""
-    c.execute(sql1, (card_id,))
-    purchase_cards_affected_rows = c.rowcount
-    logging.debug(f"Deleting card {card_id} from tbl_purchase_cards")
-
-    sql2 = """DELETE FROM tbl_cards_people WHERE card_id = ?"""
-    c.execute(sql2, (card_id,))
-    cards_people_affected_rows = c.rowcount
-    logging.debug(f"Deleting card {card_id} from tbl_cards_people")
-
-    sql3 = """DELETE FROM tbl_cards where card_id = ?"""
-    c.execute(sql3, (card_id,))
-    tbl_cards_affected_rows = c.rowcount
-    logging.debug(f"DELETE FROM tbl_cards where card_id = ?")
-
-    conn.commit()
-    conn.close()
-    total_affected_rows = purchase_cards_affected_rows + \
-        cards_people_affected_rows + tbl_cards_affected_rows
-
-    return total_affected_rows
+    
+    return purchase
 
 
 @app.route("/")
@@ -182,7 +147,7 @@ def index():
     # For toast flash message
     flash_category = {
         "danger": "danger",
-        "sucess": "success",
+        "success": "success",
         "warning": "warning"
     }
 
@@ -260,8 +225,21 @@ def edit_card():
     card_rarity = request.form.get("card_rarity")
     card_price = request.form.get("card_price")
     update_card_data = (card_name, card_rarity, card_price, card_id)
-    update_card(update_card_data)
     logging.debug(f"edit_card(). Editing card {card_id}")
+    
+    conn = get_db_connection()
+    sql = """UPDATE tbl_cards SET
+    card_name = ?,
+    card_rarity = ?,
+    card_price = ?,
+    WHERE card_id = ?
+    """
+    affected_rows = conn.execute(sql, update_card_data).rowcount
+    logging.debug(
+        f"update_card() -> Number of affected rows for card id: {card_id} is {affected_rows} row(s)")
+    conn.commit()
+    conn.close()
+    
     return redirect(url_for('index', admin=True))
 
 
@@ -307,7 +285,7 @@ def login():
         # For toast flash message
         flash_category = {
             "danger": "danger",
-            "sucess": "success",
+            "success": "success",
             "warning": "warning"
         }
 
@@ -366,6 +344,7 @@ def add_to_cart():
         c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
     conn.commit()
     conn.close()
+    flash(f"'{card_name}' was added to your cart.", "success")
     return redirect(url_for('index'))
 
 # Cart page
@@ -373,6 +352,10 @@ def add_to_cart():
 def cart():
     user_id = session.get('user_id')
     logging.debug("Loading cart page")
+    if not user_id:
+        flash("You must be logged in to view your cart.", "warning")
+        return redirect(url_for('login'))
+
     conn = get_db_connection()
     c = conn.cursor()
 
@@ -390,7 +373,7 @@ def cart():
     # For toast flash message
     flash_category = {
         "danger": "danger",
-        "sucess": "success",
+        "success": "success",
         "warning": "warning"
     }
     
@@ -415,6 +398,8 @@ def update_item_cart():
     c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (quantity, cart_id))
     conn.commit()
     conn.close()
+    
+    flash("Cart updated.", "success")
     return redirect(url_for("cart"))
 
 
@@ -439,6 +424,8 @@ def remove_item_cart():
     c.execute("DELETE FROM tbl_cart WHERE cart_id = ?", (cart_id,))
     conn.commit()
     conn.close()
+    
+    flash(f"{item_name} was removed from your cart", "warning")
     return redirect(url_for("cart"))
     
 
@@ -447,7 +434,7 @@ def apply_promo():
     logging.debug("apply_promo(). User is trying to apply a promo code")
     promocode = request.form.get("promocode")
     if promocode == "supersecretpromocode":
-        flash("Promo code is successful", "success")
+        flash("Promo code applied successfully!", "success")
     else:
         flash("Promo code is invalid", "danger")
     return redirect(url_for("cart"))
@@ -500,9 +487,10 @@ def checkout():
     return redirect(url_for('index'))
 
 
-@app.route("/logout", methods=["POST"])
+@app.route("/logout", methods=["GET", "POST"])
 def logout():
     logging.debug("User is logging out")
+    flash("You have been logged out.", "success")
     session.clear()
     return redirect(url_for("login"))
 
@@ -510,13 +498,12 @@ def logout():
 # Purchases page
 @app.route("/purchases", methods=["GET", "POST"])
 def purchases():
+    if not session.get('admin'):
+        flash("You do not have permission to view this page", "danger")
+        return redirect(url_for('index'))
     logging.debug("purchases() page called")
     conn = get_db_connection()
     c = conn.cursor()
-    purchases = c.execute("""
-        SELECT purchase_id, purchase_date, name_of_purchaser, total, delivery_address, email_address
-        FROM tbl_purchases
-    """).fetchall()
     
     # Getting the person name from the database
     user_id = session.get('user_id')
@@ -528,14 +515,28 @@ def purchases():
     # For toast flash message
     flash_category = {
         "danger": "danger",
-        "sucess": "success",
+        "success": "success",
         "warning": "warning"
     }
+
+    selected_columns = request.form.getlist("columns")
+    search_data = request.form.get("search_data", "")
+    sort_column = request.form.get("sort_column", "purchase_id")
+    sort_type = request.form.get("sort_type", "ASC")
+    
+    if request.method == 'GET' and not selected_columns:
+        selected_columns = ['purchase_id', 'purchase_date', 'name_of_purchaser', 'total', 'delivery_address', 'email_address']
+        # Not sure if this is needed NOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTENOTE
+    
+    # Default page view load all items for the user.
+    data = {}
+    data = get_data_purchases(selected_columns, search_data, sort_column, sort_type)
+    
     
     
     # Admin session
     admin = session.get('admin', False)
-    return render_template("purchases.html", purchases=purchases, username=username, admin=admin, flash_category=flash_category )
+    return render_template("purchases.html", purchase=data, search_data=search_data, selected_columns=selected_columns, sort_type=sort_type, sort_column=sort_column, username=username, admin=admin, flash_category=flash_category)
 
 
 @app.route('/edit_purchase', methods=['POST'])
@@ -566,11 +567,12 @@ def delete_purchase():
     purchase_id = request.form['purchase_id']
     conn = get_db_connection()
     c = conn.cursor()
+    c.execute("DELETE FROM tbl_purchase_cards WHERE purchase_id = ?", (purchase_id,))
     c.execute("DELETE FROM tbl_purchases WHERE purchase_id = ?", (purchase_id,))
     conn.commit()
     conn.close()
     logging.debug(f"Deleting purchase {purchase_id}")
-    flash('Purchase deleted.', 'warning')
+    flash(f'Purchase #{purchase_id} has been deleted.', 'warning')
     return redirect(url_for('purchases'))
 
 
@@ -581,7 +583,7 @@ def add_purchase():
     total = request.form['total']
     delivery_address = request.form['delivery_address']
     email_address = request.form['email_address']
-    purchase_date = request.form["purchasedate"]
+    purchase_date = request.form["purchase_date"]
     conn = get_db_connection()
     c = conn.cursor()
     c.execute(
@@ -591,8 +593,12 @@ def add_purchase():
     conn.commit()
     conn.close()
     logging.debug("New purchase added")
-    flash("Purchase added.", "success")
+    flash("New purchase has been added.", "success")
     return redirect(url_for('purchases'))
+
+
+
+
 # running
 if __name__ == "__main__":
     # deleteusercuzidontlikeyou = delete_user('1')
