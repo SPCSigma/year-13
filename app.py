@@ -245,6 +245,13 @@ def add_card():
 def login():    
     logging.debug('login()')
     error = None
+    # For toast flash message
+    flash_category = {
+        "danger": "danger",
+        "success": "success",
+        "warning": "warning"
+    }
+        
     if request.method == 'POST':
         logging.debug('login() -> POST')
         login_username = request.form.get('login_username')
@@ -253,12 +260,6 @@ def login():
         conn = get_db_connection()
         c = conn.cursor()
         
-        # For toast flash message
-        flash_category = {
-            "danger": "danger",
-            "success": "success",
-            "warning": "warning"
-        }
 
         # Check if user exists and password is correct
         check_details = c.execute(
@@ -277,7 +278,7 @@ def login():
             error = 'Username or password do not match. Please try again'
             return render_template('login.html', error=error, flash_category=flash_category)
 
-    return render_template('login.html', error=error)
+    return render_template('login.html', error=error, flash_category=flash_category)
 
 
 # Cart page
@@ -285,6 +286,14 @@ def login():
 def cart():
     user_id = session.get('user_id')
     logging.debug("Loading cart page")
+    
+    # For toast flash message
+    flash_category = {
+        "danger": "danger",
+        "success": "success",
+        "warning": "warning"
+    }
+    
     if not user_id:
         flash("You must be logged in to view your cart.", "warning")
         return redirect(url_for('login'))
@@ -302,13 +311,6 @@ def cart():
 
     # Calculate total
     cart_total = sum(item['card_price'] * item['quantity'] for item in cart_items)
-    
-    # For toast flash message
-    flash_category = {
-        "danger": "danger",
-        "success": "success",
-        "warning": "warning"
-    }
     
     # Getting the person name from the database
     user = c.execute('SELECT person_name FROM tbl_users WHERE person_id = ?', (user_id,)).fetchone()
@@ -349,11 +351,13 @@ def add_to_cart():
         c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (new_quantity, check_cart['cart_id']))
     else:
         # Insert card into cart
-        logging.debug(f"Adding card to cart. New quantity after adding: {quantity}.")
+        previous_quantity = 0
+        new_quantity = quantity
+        logging.debug(f"Adding card to cart. New quantity after adding: {new_quantity}.")
         c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
     conn.commit()
     conn.close()
-    flash(f"'{card_name}' was added to your cart.", "success")
+    flash(f"{card_name} was added to your cart.", "success")
     return redirect(url_for('index'))
 
 
