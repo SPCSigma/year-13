@@ -3,7 +3,6 @@ PRAGMA foreign_keys = 1;
 
 -- Drops tables so that the code can reset and the tables only have the stated inserted values
 DROP TABLE IF EXISTS demo;
-DROP TABLE IF EXISTS tbl_cards_people;
 DROP TABLE IF EXISTS tbl_cart;
 DROP TABLE IF EXISTS tbl_users;
 DROP TABLE IF EXISTS tbl_purchase_cards;
@@ -51,27 +50,6 @@ INSERT INTO tbl_users (person_id, person_name, username, password, email, user_a
 INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (3, 'Sean Lester', 'Snowynoob', 'seanlesterer', 's.lester@stpauls.school.nz', 'user');
 INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (4, 'Roy Zhu', 'xx_zuzu_dabomb_xx', 'loylu', 'r.zhu@stpauls.school.nz', 'user');
 INSERT INTO tbl_users (person_id, person_name, username, password, email, user_access) VALUES (5, 'Eric Joe', 'EJ', 'ericjojo', 'e.joe@stpauls.school.nz', 'user');
-
-
-
--- Create tbl_cards_people table
-CREATE TABLE tbl_cards_people(
-  person_id INTEGER,
-  card_id INTEGER,
-  PRIMARY KEY (person_id, card_id),
-  FOREIGN KEY (person_id) REFERENCES tbl_users(person_id),
-  FOREIGN KEY (card_id) REFERENCES tbl_cards(card_id)
-);
-
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (1, 1);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (1, 2);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (2, 3);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (2, 6);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (3, 5);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (3, 8);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (5, 4);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (5, 7);
-INSERT INTO tbl_cards_people (person_id, card_id) VALUES (5, 9);
 
 
 -- Creates tbl_purchases

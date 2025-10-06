@@ -8,8 +8,7 @@ app = Flask(__name__, static_url_path='/assets', static_folder='assets')
 # Add secret key for session encryption
 app.config['SECRET_KEY'] = 'T5jicsXX4qC0rZleWafsCsOSzLpKuwt2'
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', handlers=[
-                    logging.StreamHandler()])
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', handlers=[logging.StreamHandler()])
 logging.getLogger().setLevel(logging.DEBUG)
 
 
@@ -346,18 +345,22 @@ def add_to_cart():
     if check_cart:
         # Update quantity
         previous_quantity = check_cart['quantity']
-        new_quantity = previous_quantity + quantity
-        logging.debug(f"Card is already in cart. Previous quantity: {previous_quantity}. New quantity after adding: {new_quantity}.")
+        potential_new_quantity = previous_quantity + quantity
+        if potential_new_quantity > 50:
+            new_quantity = 50
+            flash(f"Item limit reached. There can only be a maximum of 50 per card type.", "warning")
+        else:
+            new_quantity = potential_new_quantity
         c.execute("UPDATE tbl_cart SET quantity = ? WHERE cart_id = ?", (new_quantity, check_cart['cart_id']))
     else:
         # Insert card into cart
         previous_quantity = 0
         new_quantity = quantity
         logging.debug(f"Adding card to cart. New quantity after adding: {new_quantity}.")
+        flash(f"{quantity}x {card_name} was added to your cart.", "success")
         c.execute("INSERT INTO tbl_cart (user_id, card_id, quantity) VALUES (?, ?, ?)", (user_id, card_id, new_quantity))
     conn.commit()
     conn.close()
-    flash(f"{card_name} was added to your cart.", "success")
     return redirect(url_for('index'))
 
 

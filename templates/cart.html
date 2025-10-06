@@ -59,6 +59,16 @@
             border: 1px solid black;
         }
 
+        .nav-link {
+        color: white;
+        }
+
+        .nav-link:hover,
+        .nav-link:focus {
+            color: #0d6efe;
+            background-color: transparent;
+        }
+
         .bottompagespace {
             height: 17px;
         }
@@ -120,20 +130,20 @@
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="/index">
                         <svg class="bi pe-none me-2" width="16" height="16"></svg>
-                        Home
+                        <span style="font-size: large;"><strong>Home</strong></span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" aria-current="page" href="/cart">
                         <svg class="bi pe-none me-2" width="16" height="16"></svg>
-                        Cart
+                        <span style="font-size: large;"><strong>Cart</strong></span>
                     </a>
                 </li>
                 {% if admin %}
                 <li class="nav-item">
                     <a class="nav-link" aria-current="page" href="/purchases">
                         <svg class="bi pe-none me-2" width="16" height="16"></svg>
-                        Purchases
+                        <span style="font-size: large;"><strong>Purchases</strong></span>
                     </a>
                 </li>
                 {% endif %}
@@ -187,7 +197,8 @@
                         </div>
                         {% else %}
                         {% for item in cart_items %}
-                        <div class="d-flex align-items-center">
+                        <!-- Items in cart -->
+                        <div class="d-flex align-items-center mb-4">
                             <div>
                                 <div class="fw-bold">{{ item['card_name'] }}</div>
                                 <div class="text-muted mb-1">NZD <span class="fw-bold">${{ "%.2f"|format(item['card_price']) }}</span> each</div>
@@ -196,7 +207,7 @@
                                     <label class="fw-bold me-1">QTY</label>
                                     <select name="quantity" class="form-select form-select-sm d-inline w-auto">
                                         <!-- Checks and shows the correct quantity of cards in cart -->
-                                        {% for q in range(1, 31) %}
+                                        {% for q in range(1, 51) %}
                                         <option value="{{ q }}" {% if item['quantity']==q %}selected{% endif %}>{{ q }}
                                         </option>
                                         {% endfor %}
